@@ -1,0 +1,1610 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자산 모니터 · 자산 온도</title>
+<meta name="description" content="VOO·SCHD·QQQ·금·비트코인·코스피·서울 아파트의 역사적 수익률, 최대 낙폭, 지금 하락 위치와 상대적인 자산 온도">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f4f5f3; --panel:#fcfcfb; --ink:#0b0b0b; --sub:#52514e; --muted:#7d7b75;
+  --line:#e1e0d9; --line2:#efeee9; --axis:#c3c2b7; --grid:#ecebe5; --track:#e9e8e2;
+  --brand:#17365E; --brand-w:#e8edf4; --accent:#e07a4f;
+  --price:#17365E;
+  --up:#e34948; --dn:#2a78d6; --up-t:#c42f2f; --dn-t:#1c5cab; --dn-w:rgba(42,120,214,.16);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0d0d0d; --panel:#1a1a19; --ink:#f0efec; --sub:#c3c2b7; --muted:#9a988f;
+    --line:#2c2c2a; --line2:#242423; --axis:#45443f; --grid:#262624; --track:#2a2a28;
+    --brand:#8ab8f5; --brand-w:#1c2738; --accent:#ee9a74;
+    --price:#9ec5f4;
+    --up:#e66767; --dn:#3987e5; --up-t:#f28b8b; --dn-t:#7fb1ee; --dn-w:rgba(57,135,229,.24);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d0d0d; --panel:#1a1a19; --ink:#f0efec; --sub:#c3c2b7; --muted:#9a988f;
+  --line:#2c2c2a; --line2:#242423; --axis:#45443f; --grid:#262624; --track:#2a2a28;
+  --brand:#8ab8f5; --brand-w:#1c2738; --accent:#ee9a74;
+  --price:#9ec5f4;
+  --up:#e66767; --dn:#3987e5; --up-t:#f28b8b; --dn-t:#7fb1ee; --dn-w:rgba(57,135,229,.24);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{font-family:"Malgun Gothic","맑은 고딕",system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;padding:10px 20px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-weight:700;font-size:17px;white-space:nowrap}
+.brand small{font-weight:400;color:var(--muted);font-size:12.5px;margin-left:8px}
+.right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+#status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+#status.ok .dot{background:#0ca30c}
+#status.bad .dot{background:#d03b3b}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:8px 14px;border-radius:8px;color:var(--sub);cursor:pointer;font-size:14.5px}
+.tabs button:hover{background:var(--line2)}
+.tabs button.on{background:var(--brand-w);color:var(--ink);font-weight:700}
+.pane{display:none}
+.pane.on{display:block}
+.pane>.panel:first-child,.pane>.cards:first-child{margin-top:0}
+.con-box{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:12px}
+.con-box h3{margin:0 0 8px;font-size:15px}
+.notice{border-left:4px solid var(--accent);background:var(--line2);border-radius:8px;padding:10px 14px;margin:10px 0 12px;font-size:14px;line-height:1.65;color:var(--sub)}
+.notice b{color:var(--ink)}
+.holds{display:flex;flex-wrap:wrap;gap:8px 18px;margin:4px 0 10px}
+.holds label{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+.holds label span{font-size:12.5px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:none;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--sub)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--brand);color:var(--panel);font-weight:700}
+.ghost{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px}
+.ghost:hover{background:var(--line2)}
+main{max-width:1320px;margin:0 auto;padding:16px 20px 40px}
+.muted{color:var(--muted)}
+.up{color:var(--up-t)} .dn{color:var(--dn-t)}
+.num{font-variant-numeric:tabular-nums}
+
+/* 카드 */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 16px 14px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card:hover{border-color:var(--axis)}
+.card.on{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.c-top{display:flex;align-items:baseline;gap:8px;min-width:0}
+.c-name{font-weight:700;font-size:16px;white-space:nowrap}
+.c-desc{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-state{margin-left:auto;font-size:11.5px;color:var(--muted);white-space:nowrap}
+.c-state.live{color:#0a8a0a}
+.c-state.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#0ca30c;margin-right:5px;vertical-align:1px;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.25}}
+.c-price{font-size:24px;font-weight:700;letter-spacing:-.3px;line-height:1.2}
+.c-price small{font-size:12.5px;font-weight:400;color:var(--muted);margin-left:6px;letter-spacing:0}
+.c-chg{font-size:13px}
+.c-row{display:flex;gap:14px;font-size:12.5px;color:var(--sub);flex-wrap:wrap}
+.c-row b{font-weight:700;color:var(--ink)}
+.gauge{margin-top:4px}
+.g-label{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-bottom:4px}
+.g-label b{color:var(--ink)}
+.track{position:relative;height:8px;border-radius:4px;background:var(--track)}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--dn);min-width:3px}
+
+/* 자세히 */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:16px}
+.d-head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.d-head h2{margin:0;font-size:22px}
+.d-head h2 span{font-size:14px;font-weight:400;color:var(--muted);margin-left:8px}
+.d-price{font-size:15px;margin-top:2px}
+.d-price b{font-size:26px;margin-right:8px}
+.kpis{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-top:14px}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.kpi .k{font-size:12.5px;color:var(--sub)}
+.kpi .v{font-size:22px;font-weight:700;line-height:1.3;white-space:nowrap}
+.kpi .s{font-size:11.5px;color:var(--muted);line-height:1.35}
+.where{margin-top:16px;border-radius:10px;background:var(--line2);padding:14px 16px}
+.where h3{margin:0 0 10px;font-size:15px}
+.big-g{position:relative;margin:26px 4px 22px}
+.big-g .track{height:14px;border-radius:7px}
+.big-g .fill{border-radius:7px}
+.big-g .ep{position:absolute;top:-3px;width:2px;height:20px;background:var(--sub);opacity:.45;transform:translateX(-1px);cursor:default}
+.big-g .ep:hover{opacity:1}
+.big-g .now{position:absolute;top:-24px;transform:translateX(-50%);font-size:12.5px;font-weight:700;white-space:nowrap;color:var(--dn-t)}
+.big-g .now::after{content:"";position:absolute;left:50%;top:19px;width:2px;height:24px;background:var(--ink);transform:translateX(-1px)}
+.big-g .sc{position:absolute;top:18px;font-size:11px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.where ul{margin:0;padding-left:18px;font-size:14px;color:var(--sub)}
+.where li{margin:3px 0}
+.where li b{color:var(--ink)}
+.toolbar{display:flex;align-items:center;gap:6px;margin:18px 0 6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer;color:var(--sub)}
+.chip:hover{background:var(--line2)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:var(--panel);font-weight:700}
+.toolbar label{margin-left:auto;font-size:13px;color:var(--sub);display:flex;align-items:center;gap:6px;cursor:pointer}
+.ch-title{font-size:13px;color:var(--sub);margin:12px 0 2px;font-weight:700}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;overflow:visible}
+svg text{fill:var(--muted);font-size:11px}
+svg .lbl{fill:var(--ink);font-size:12px;font-weight:700;paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+svg .grid{stroke:var(--grid);stroke-width:1}
+svg .base{stroke:var(--axis);stroke-width:1}
+svg .xh{stroke:var(--sub);stroke-width:1;opacity:.6}
+h3.sec{font-size:15px;margin:22px 0 6px}
+.note{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line2);text-align:right;white-space:nowrap}
+th{font-weight:700;color:var(--sub);font-size:12.5px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+.tbl-wrap{overflow-x:auto}
+#aptTable th{cursor:pointer;user-select:none}
+#aptTable th:hover{color:var(--ink)}
+#aptTable th.sorted::after{content:" ▾";font-size:10px}
+#aptTable th.sorted.asc::after{content:" ▴"}
+#aptTable tbody tr{cursor:pointer}
+#aptTable tbody tr:hover td{background:var(--line2)}
+#aptTable tr.on td{background:var(--brand-w)}
+#aptTable tr.seoul td{font-weight:700}
+.mini{display:inline-block;vertical-align:middle;width:70px;height:6px;border-radius:3px;background:var(--track);position:relative;margin-left:8px}
+.mini i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--dn);min-width:2px}
+/* 구별 전고점 */
+.pk-sum{font-size:14px;color:var(--sub);margin:4px 0 10px}
+.pk-sum b{color:var(--ink)}
+.pk-axis,.pk-row{display:grid;grid-template-columns:76px minmax(0,1fr) 330px;gap:12px;align-items:center}
+.pk-axis{font-size:11px;color:var(--muted);margin-bottom:2px}
+.pk-axis .pk-bar{height:16px;background:none}
+.pk-axis .pk-bar span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.pk-row{padding:5px 0;border-bottom:1px solid var(--line2);cursor:pointer;font-size:13.5px}
+.pk-row:hover{background:var(--line2)}
+.pk-row.on{background:var(--brand-w)}
+.pk-row.seoul{font-weight:700}
+.pk-bar{position:relative;height:18px}
+.pk-bar .z{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--ink);opacity:.55}
+.pk-bar .g{position:absolute;top:0;bottom:0;width:1px;background:var(--grid)}
+.pk-bar .drop{position:absolute;top:5px;height:8px;background:var(--dn-w);border-radius:4px 0 0 4px}
+.pk-bar .rise{position:absolute;top:5px;height:8px;background:var(--up);border-radius:0 4px 4px 0;opacity:.85}
+.pk-bar .low{position:absolute;top:3px;height:12px;width:2px;background:var(--dn);transform:translateX(-1px)}
+.pk-bar .cur{position:absolute;top:3px;width:12px;height:12px;border-radius:50%;transform:translateX(-6px);border:2px solid var(--panel)}
+.pk-txt{font-size:12.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 8px;font-size:13px;color:var(--sub)}
+.lv-top select{border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--panel);font-size:13px}
+.lv-name small{display:block;font-size:11.5px;color:var(--muted);font-weight:400;line-height:1.2}
+.pk-bar .band{position:absolute;top:5px;height:8px;background:var(--track);border-radius:4px}
+.pk-bar .tk{position:absolute;top:3px;height:12px;width:2px;background:var(--muted);transform:translateX(-1px)}
+.pk-bar .mean{position:absolute;top:0;height:18px;width:2px;background:var(--accent);transform:translateX(-1px)}
+.tr{font-weight:700;white-space:nowrap}
+.tr-up{color:var(--up-t)} .tr-dn{color:var(--dn-t)} .tr-flat{color:var(--sub)}
+.tr small{font-weight:400;color:var(--muted);margin-left:4px}
+.tbar{display:inline-block;position:relative;width:110px;height:8px;background:var(--track);border-radius:4px;vertical-align:middle;margin-right:8px}
+.tbar::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--ink);opacity:.45}
+.tbar i{position:absolute;top:0;bottom:0;border-radius:4px}
+#tempTable tbody tr,#relTable tbody tr{cursor:pointer}
+#tempTable tbody tr:hover td,#relTable tbody tr:hover td{background:var(--line2)}
+#tempTable tr.on td,#relTable tr.on td{background:var(--brand-w)}
+td small{font-size:11.5px}
+/* 큰 표는 칸 안에서 줄을 바꿔 화면 폭에 맞춘다 (옆으로 밀리는 막대가 생기지 않게) */
+#tempTable th,#tempTable td,#relTable th,#relTable td,#aptTable th{white-space:normal}
+#tempTable td small,#relTable td small{display:block}
+#tempTable td:last-child,#relTable td:last-child{white-space:nowrap;text-align:left;width:1%}
+.tcell{display:grid;grid-template-columns:76px 80px;column-gap:8px;align-items:center}
+.tcell .tbar{margin:0;width:76px}
+.tcell b{font-size:14px}
+.tcell small{grid-column:1 / 3;display:block;color:var(--muted);font-size:11.5px;line-height:1.3;margin-top:2px}
+ul.why{margin:6px 0 0;padding-left:18px;font-size:13.5px;color:var(--sub)}
+ul.why li{margin:5px 0}
+ul.why b{color:var(--ink)}
+.cm-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:18px;margin-top:10px}
+.cm{border-collapse:separate;border-spacing:2px;width:auto;font-size:12.5px}
+.cm th{font-weight:400;color:var(--sub);padding:2px 6px;border:0;font-size:12px;text-align:right;white-space:nowrap}
+.cm thead th{text-align:center;padding:2px 0}
+.cm td{min-width:44px;height:32px;text-align:center;border:0;padding:0 2px;border-radius:4px;cursor:pointer;font-variant-numeric:tabular-nums;color:var(--ink)}
+.cm td.blank{background:none;cursor:default}
+.cm td.on{outline:2px solid var(--ink);outline-offset:-1px}
+.cm-title{font-weight:700;font-size:13.5px;margin-bottom:2px}
+.typ{position:absolute;left:0;top:0;bottom:0;background:rgba(224,122,79,.22);border-radius:7px 0 0 7px}
+.typ-tk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--accent);transform:translateX(-1px)}
+.pk-txt b{color:var(--ink);font-size:13.5px}
+@media (max-width:760px){
+  .pk-axis,.pk-row{grid-template-columns:62px minmax(0,1fr)}
+  .pk-txt{grid-column:2;white-space:normal}
+  .pk-axis>span:last-child{display:none}
+}
+footer{margin-top:22px;font-size:12.5px;color:var(--muted);line-height:1.7}
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12.5px;box-shadow:0 4px 14px rgba(0,0,0,.12);white-space:nowrap}
+.tip b{font-size:13.5px}
+.loading{padding:30px;text-align:center;color:var(--muted)}
+.err{color:#d03b3b;font-size:13px}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:640px){
+  main{padding:12px 16px 30px} header{padding:10px 16px;position:static}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi .v{font-size:19px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">자산 모니터<small>역사적 수익률 · 최대 낙폭 · 지금 하락 위치</small></div>
+  <nav class="tabs" id="tabs"><button data-tab="sum">전체 요약</button><button data-tab="fin">금융 투자</button><button data-tab="apt">부동산</button><button data-tab="con">결론</button></nav>
+  <div class="right">
+    <span class="seg" id="basis" title="달러 자산(VOO·SCHD·QQQ·GLD·비트코인)을 무엇으로 계산할지"><button data-krw="0">달러 기준</button><button data-krw="1">원화 기준</button></span>
+    <span id="fx"></span>
+    <span id="status"><span class="dot"></span>불러오는 중</span>
+    <button class="ghost" id="reload" title="일별 기록과 아파트 자료를 처음부터 다시 받아요">기록 다시 받기</button>
+  </div>
+</header>
+<main>
+  <div class="pane" data-pane="sum">
+    <section class="cards" id="cards"><div class="loading">시세 기록을 받는 중이에요…</div></section>
+    <section class="panel" id="temp"></section>
+    <section class="panel" id="sumApt"></section>
+  </div>
+  <div class="pane" data-pane="fin">
+    <section class="cards" id="cardsFin"></section>
+    <div id="hostFin"></div>
+    <section class="panel" id="corr"></section>
+  </div>
+  <div class="pane" data-pane="con">
+    <section class="panel" id="con"></section>
+  </div>
+  <section class="panel" id="detail" hidden></section>
+  <div class="pane" data-pane="apt">
+  <div id="hostApt"></div>
+  <section class="panel" id="apt">
+    <div class="d-head"><h2>서울 아파트 구별<span id="aptSub">KB부동산 매매가격지수 · ㎡당 평균 매매가</span></h2></div>
+    <p class="note" id="aptNote">불러오는 중…</p>
+    <div class="tbl-wrap"><table id="aptTable"></table></div>
+    <h3 class="sec" style="margin-top:28px">구별 상대 가격 평가</h3>
+    <div id="rel"><p class="note">불러오는 중…</p></div>
+    <h3 class="sec" style="margin-top:28px">구별 전고점 대비 지금 위치</h3>
+    <div id="peaks"><p class="note">불러오는 중…</p></div>
+    <h3 class="sec" style="margin-top:28px">구별 가격 수준 (강남구 대비)</h3>
+    <div id="lv"><p class="note">불러오는 중…</p></div>
+  </section>
+  </div>
+  <footer id="foot"></footer>
+</main>
+<div class="tip" id="tip" hidden></div>
+<script>window.ASSET_PUBLIC = true;</script>
+<script>
+'use strict';
+const $ = (s, el = document) => el.querySelector(s);
+const DAY = 864e5;
+// 공개판: 서버 없이 data/*.json 을 읽고(한 시간마다 클라우드에서 갱신), '내 자산 리밸런싱' 칸은 뺀다
+const PUBLIC = !!window.ASSET_PUBLIC;
+const MAX_YEARS = 20; // 주식·금·비트코인·환율은 최근 20년까지만 (닷컴 버블 같은 옛 구간은 빼고)
+const S = { assets: [], apt: null, aptRows: [], live: null, liveErr: false, sel: 'VOO', period: '20y', log: true, krw: false, sort: { key: 'cur', dir: 1 } };
+S.lvBase = null; S.lvSel = null; // 구별 가격 수준: 기준 구(없으면 가장 비싼 구), 흐름을 볼 구
+// 화면 탭: sum 전체 요약 · fin 금융 투자 · apt 부동산 · con 결론. 자세히는 금융(selFin)·부동산(selApt) 탭에 따로 기억
+S.tab = 'sum'; S.selFin = 'VOO'; S.selApt = 'APT1100000000'; S.mvFrom = '1162000000'; S.mvTo = '1168000000'; S.mvDir = 'up'; // 갈아타기: up 상급지로, down 하급지로 S.hold = []; // 결론 탭에서 고른 '내 자산'
+try { const p = JSON.parse(localStorage.getItem('assetMonitor.v1') || '{}'); Object.assign(S, { period: p.period && p.period !== 'all' ? p.period : S.period, log: p.log ?? S.log, krw: !!p.krw, sort: p.sort || S.sort, lvBase: p.lvBase || null, lvSel: p.lvSel || null, tab: p.tab || 'sum', selFin: p.selFin || S.selFin, selApt: p.selApt || S.selApt, mvFrom: p.mvFrom || S.mvFrom, mvTo: p.mvTo || S.mvTo, mvDir: p.mvDir === 'down' ? 'down' : 'up', hold: Array.isArray(p.hold) ? p.hold : [] }); } catch (e) {}
+S.sel = S.tab === 'apt' ? S.selApt : S.selFin;
+function remember() { try { localStorage.setItem('assetMonitor.v1', JSON.stringify({ period: S.period, log: S.log, krw: S.krw, sort: S.sort, lvBase: S.lvBase, lvSel: S.lvSel, tab: S.tab, selFin: S.selFin, selApt: S.selApt, mvFrom: S.mvFrom, mvTo: S.mvTo, mvDir: S.mvDir, hold: S.hold })); } catch (e) {} }
+function pick(id) { // 종목·지역을 고르면 그 탭의 자세히로
+  if (String(id).startsWith('APT')) S.selApt = id; else S.selFin = id;
+  S.sel = id;
+}
+
+// ── 글자 모양 ─────────────────────────────────
+const nf = (x, d = 0) => x.toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const MINUS = '−';
+const peakTxt = (cur, d = 1) => (cur >= -0.0005 ? '고점 넘음' : pct(cur, d)); // 지금이 최고가면 0.0% 대신
+function pct(x, d = 1, sign = true) {
+  if (x == null || !isFinite(x)) return '–';
+  const s = (Math.abs(x) * 100).toFixed(d);
+  if (+s === 0) return (0).toFixed(d) + '%';
+  return (x < 0 ? MINUS : sign ? '+' : '') + s + '%';
+}
+const ud = (x) => (x > 0.00005 ? 'up' : x < -0.00005 ? 'dn' : '');
+const arrow = (x) => (x > 0.00005 ? '▲ ' : x < -0.00005 ? '▼ ' : '');
+function chg(x, d = 2) { return `<span class="${ud(x)}">${arrow(x)}${pct(Math.abs(x) < 0.00005 ? 0 : Math.abs(x), d, false)}</span>`; }
+function dstr(day, monthly) {
+  const t = new Date(day * DAY), y = t.getUTCFullYear(), m = String(t.getUTCMonth() + 1).padStart(2, '0'), d = String(t.getUTCDate()).padStart(2, '0');
+  return monthly ? `${y}.${m}` : `${y}.${m}.${d}`;
+}
+function dur(days) {
+  if (days < 45) return Math.max(1, Math.round(days)) + '일';
+  const mo = Math.round(days / 30.44);
+  if (mo < 12) return mo + '개월';
+  const y = Math.floor(mo / 12), r = mo % 12;
+  return y + '년' + (r ? ' ' + r + '개월' : '');
+}
+function won(x) {
+  if (x >= 1e8) { const e = Math.floor(x / 1e8), m = Math.round((x % 1e8) / 1e4); return e + '억' + (m ? ' ' + nf(m) + '만' : '') + ' 원'; }
+  if (x >= 1e4) return nf(Math.round(x / 1e4)) + '만 원';
+  return nf(Math.round(x)) + '원';
+}
+const man = (x) => won(x * 1e4); // 만 원 단위 숫자
+const eok = (x) => (x / 1e4).toFixed(1) + '억'; // 만 원 → '31.1억'
+function wonFull(x) { // 1억 이상은 만 원까지, 그 아래는 원까지
+  if (x >= 1e8) return won(x);
+  const m = Math.floor(x / 1e4), r = Math.round(x % 1e4);
+  return m ? `${nf(m)}만${r ? ' ' + nf(r) : ''}원` : nf(Math.round(x)) + '원';
+}
+function usd(p) { return '$' + p.toLocaleString('en-US', { minimumFractionDigits: p >= 1000 ? 0 : 2, maximumFractionDigits: p >= 1000 ? 0 : 2 }); }
+function price(s, p) {
+  if (s.cur === 'USD') return usd(p);
+  if (s.cur === 'KRW') return wonFull(p);
+  if (s.cur === 'RATE') return nf(p, 1) + '원';
+  if (s.cur === 'PT') return nf(p, 2);
+  return nf(p, 1);
+}
+function axisNum(s, v) {
+  if (s.cur === 'USD') return '$' + (v >= 10000 ? nf(v / 1000) + 'k' : v < 10 ? +v.toFixed(2) : nf(v));
+  if (s.cur === 'KRW') return v >= 1e8 ? +(v / 1e8).toFixed(2) + '억' : v >= 1e4 ? nf(v / 1e4) + '만' : nf(v);
+  return v >= 100 ? nf(v) : String(+v.toFixed(2));
+}
+// '20년' 또는 기록이 짧으면 '2011~'
+function spanLabel(s) { const y = (s.d[s.d.length - 1] - s.d[0]) / 365.25; return Math.abs(y - MAX_YEARS) < 0.1 ? `${MAX_YEARS}년` : `${new Date(s.d[0] * DAY).getUTCFullYear()}~`; }
+
+// ── 계산 ─────────────────────────────────────
+function idxBefore(d, day) { let lo = 0, hi = d.length - 1, r = -1; while (lo <= hi) { const m = (lo + hi) >> 1; if (d[m] < day) { r = m; lo = m + 1; } else hi = m - 1; } return r; }
+const jan1 = (y) => Date.UTC(y, 0, 1) / DAY;
+
+function calc(s) {
+  const { d, v } = s, n = v.length, last = v[n - 1], lastD = d[n - 1];
+  const dd = new Float64Array(n);
+  let pk = v[0], pkI = 0, mdd = 0, mP = 0, mT = 0;
+  for (let i = 0; i < n; i++) {
+    if (v[i] >= pk) { pk = v[i]; pkI = i; }
+    dd[i] = v[i] / pk - 1;
+    if (dd[i] < mdd) { mdd = dd[i]; mP = pkI; mT = i; }
+  }
+  let mR = -1;
+  for (let i = mT; i < n; i++) if (v[i] >= v[mP]) { mR = i; break; }
+  const yrs = (lastD - d[0]) / 365.25;
+  const cagrN = (N) => { const t = lastD - N * 365.25; if (d[0] > t + 31) return null; const i = Math.max(0, idxBefore(d, t + 1)); return (last / v[i]) ** (1 / N) - 1; };
+  const Y = new Date(lastD * DAY).getUTCFullYear();
+  const bi = idxBefore(d, jan1(Y));
+  const years = [];
+  for (let y = new Date(d[0] * DAY).getUTCFullYear(); y <= Y; y++) {
+    const b = idxBefore(d, jan1(y)), e = y === Y ? n - 1 : idxBefore(d, jan1(y + 1));
+    if (e < 0 || e <= b) continue;
+    // 연중 최대 하락: 그 해 안에서(지난해 마지막 값부터) 고점 → 저점으로 가장 많이 빠진 폭
+    let yp = v[Math.max(0, b)], idd = 0;
+    for (let i = Math.max(0, b); i <= e; i++) { if (v[i] > yp) yp = v[i]; if (v[i] / yp - 1 < idd) idd = v[i] / yp - 1; }
+    years.push({ y, r: v[e] / (b < 0 ? v[0] : v[b]) - 1, idd, part: b < 0 || y === Y, first: b < 0 });
+  }
+  const full = years.filter((x) => !x.part);
+  const idds = full.map((x) => x.idd).sort((a, b) => a - b);
+  const iddMed = idds.length ? (idds.length % 2 ? idds[(idds.length - 1) / 2] : (idds[idds.length / 2 - 1] + idds[idds.length / 2]) / 2) : null;
+  const iddMean = idds.length ? idds.reduce((a, b) => a + b, 0) / idds.length : null;
+  const corrThr = s.kind === 'm' ? -0.05 : -0.10;
+  const corrYears = full.filter((x) => x.idd <= corrThr);
+  const rs = full.map((x) => x.r).sort((a, b) => a - b);
+  const mean = rs.length ? rs.reduce((a, b) => a + b, 0) / rs.length : null;
+  const median = rs.length ? (rs.length % 2 ? rs[(rs.length - 1) / 2] : (rs[rs.length / 2 - 1] + rs[rs.length / 2]) / 2) : null;
+  const best = full.reduce((a, x) => (!a || x.r > a.r ? x : a), null), worst = full.reduce((a, x) => (!a || x.r < a.r ? x : a), null);
+  // 하락 구간: 고점 → 저점 → 그 고점을 다시 넘은 날
+  const thr = s.kind === 'm' ? -0.05 : -0.10;
+  const eps = [];
+  let pI = 0, inDD = false, t = 0;
+  for (let i = 0; i < n; i++) {
+    if (v[i] >= v[pI]) {
+      if (inDD) { const depth = v[t] / v[pI] - 1; if (depth <= thr) eps.push({ p: pI, t, r: i, depth }); inDD = false; }
+      pI = i;
+    } else {
+      if (!inDD) { inDD = true; t = i; }
+      if (v[i] < v[t]) t = i;
+    }
+  }
+  if (inDD) { const depth = v[t] / v[pI] - 1; if (depth <= thr) eps.push({ p: pI, t, r: -1, depth }); }
+  const cur = dd[n - 1];
+  let deeper = 0;
+  if (cur < -0.0005) for (let i = 0; i < n; i++) if (dd[i] <= cur) deeper++;
+  return {
+    n, last, lastD, dd, mdd, mP, mT, mR, athI: pkI, cur, yrs, thr,
+    cagr: (last / v[0]) ** (1 / yrs) - 1, c10: cagrN(10), c5: cagrN(5), c3: cagrN(3), c1: cagrN(1),
+    ytd: bi >= 0 ? last / v[bi] - 1 : null, ytdBase: bi >= 0 ? d[bi] : null,
+    years, full, mean, median, best, worst, up: full.filter((x) => x.r > 0).length,
+    iddMed, iddMean, corrThr, corrYears, corrUp: corrYears.filter((x) => x.r > 0).length, iddNow: years.length && years[years.length - 1].y === Y ? years[years.length - 1].idd : null,
+    eps, deeperShare: deeper / n,
+  };
+}
+
+// ── 자료 꾸리기 ───────────────────────────────
+const SEOUL = '1100000000';
+const ym = (s) => Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, 15) / DAY;
+const ymd = (s) => Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8)) / DAY;
+function buildApt(a) {
+  const M = a.monthly, W = a.weekly, Q = a.sqm;
+  const md = M.dates.map(ym);
+  const out = [];
+  for (const r of M.rows) {
+    const d = [], v = [];
+    r.v.forEach((x, i) => { if (x != null) { d.push(md[i]); v.push(x); } });
+    if (v.length < 24) continue;
+    const w = W.rows.find((x) => x.code === r.code), q = Q.rows.find((x) => x.code === r.code);
+    const wv = w ? w.v.filter((x) => x != null) : [];
+    const qi = q ? q.v.length - 1 - [...q.v].reverse().findIndex((x) => x != null) : -1;
+    const isSeoul = r.code === SEOUL;
+    const avg = isSeoul ? a.avg.rows.find((x) => x.code === SEOUL) : null;
+    out.push({
+      id: 'APT' + r.code, code: r.code, kind: 'm', cur: 'IDX', seoul: isSeoul,
+      short: isSeoul ? '서울' : r.name, name: isSeoul ? '서울 아파트' : r.name + ' 아파트',
+      desc: isSeoul ? 'KB 매매가격지수 · 25개 구 전체' : 'KB 매매가격지수', basis: '가격만(임대 수익 제외)',
+      d, v,
+      week: wv.length >= 2 ? { r: wv[wv.length - 1] / wv[wv.length - 2] - 1, day: ymd(W.dates[W.dates.length - 1]) } : null,
+      sqm: qi >= 0 ? q.v[qi] : null, sqmDate: qi >= 0 ? Q.dates[qi] : null,
+      sqm1y: qi >= 12 ? q.v[qi - 12] : null,
+      avg: avg ? avg.v[avg.v.length - 1] : null, avgDate: avg ? a.avg.dates[a.avg.dates.length - 1] : null,
+    });
+  }
+  return out;
+}
+// 화면에 쓰는 값: 지금 시세를 붙이고 → 원화 기준이면 환율을 곱하고 → 최근 20년만 남긴다
+function series(id, krw = S.krw) {
+  const a = S.assets.find((x) => x.id === id);
+  if (a) { const s = withLive(a); return win(krw && a.cur === 'USD' ? toKRW(s) : s); }
+  const r = S.aptRows.find((x) => x.id === id);
+  return r ? win(r) : null; // 아파트도 최근 20년 (1986년부터의 최대 낙폭은 자세히에 따로 한 줄)
+}
+function win(s) {
+  const k = idxBefore(s.d, s.d[s.d.length - 1] - MAX_YEARS * 365.25) + 1;
+  return k > 0 ? { ...s, d: s.d.slice(k), v: s.v.slice(k) } : s;
+}
+function toKRW(s) {
+  const fx = S.assets.find((x) => x.id === 'FX');
+  if (!fx) return s;
+  const f = withLive(fx), d = [], v = [];
+  let j = 0;
+  for (let i = 0; i < s.d.length; i++) {
+    while (j + 1 < f.d.length && f.d[j + 1] <= s.d[i]) j++;
+    if (f.d[j] > s.d[i]) continue; // 환율 기록이 시작되기 전
+    d.push(s.d[i]); v.push(s.v[i] * f.v[j]);
+  }
+  const FL = S.live && S.live.q.FX;
+  const usdLast = s.v[s.v.length - 1];
+  if (FL && v.length) v[v.length - 1] = usdLast * FL.p; // 미국 장이 닫혀 있어도 원화 값은 지금 환율로
+  const L = s.L && FL ? { ...s.L, p: s.L.p * FL.p, prev: s.L.prev * FL.prev } : s.L;
+  return { ...s, d, v, L, cur: 'KRW', basis: '원화 환산(그날 환율)', usdLast };
+}
+function withLive(a) {
+  const L = S.live && S.live.q[a.id];
+  if (!L || !L.p) return a;
+  const d = a.d.slice(), v = a.v.slice(), last = d[d.length - 1];
+  if (L.day > last) { d.push(L.day); v.push(L.p); } else if (L.day === last) v[v.length - 1] = L.p;
+  return { ...a, d, v, L };
+}
+
+// ── 카드 ─────────────────────────────────────
+function stateText(s) {
+  if (s.kind === 'm') return s.week ? `<span class="c-state">주간 ${dstr(s.week.day).slice(5)} 기준</span>` : '';
+  const L = s.L;
+  if (!L) return '<span class="c-state">어제까지 기록</span>';
+  if (L.open) return `<span class="c-state live">${s.h24 ? '24시간' : '장중'}</span>`;
+  return `<span class="c-state">${dstr(L.day).slice(5).replace('.', '/')} 마감</span>`;
+}
+function subPrice(s) {
+  const fx = S.live && S.live.q.FX;
+  const upbit = s.id === 'BTC' && S.live && S.live.q.UPBIT ? `업비트 ${won(S.live.q.UPBIT.p)}` : '';
+  if (s.cur === 'KRW' && s.usdLast) return [usd(s.usdLast), upbit].filter(Boolean).join(' · ');
+  if (upbit) return upbit;
+  if (s.cur === 'USD' && fx) return `약 ${won(s.v[s.v.length - 1] * fx.p)}`;
+  return '';
+}
+function gaugeHTML(c) {
+  const w = c.mdd < 0 ? Math.min(100, (c.cur / c.mdd) * 100) : 0;
+  const t = c.iddMed != null && c.mdd < 0 ? Math.min(100, (c.iddMed / c.mdd) * 100) : null;
+  return `<div class="gauge"><div class="g-label"><span>고점 대비 <b>${peakTxt(c.cur)}</b></span><span>${t != null ? `보통 해 ${pct(c.iddMed, 0)} · ` : ''}최대 ${pct(c.mdd, 0)}</span></div>
+    <div class="track" title="왼쪽 끝 = 최고가, 주황 = 평범한 해의 연중 하락(가운데 값), 오른쪽 끝 = 역대 최대 하락">${t != null ? `<i class="typ" style="width:${t.toFixed(1)}%"></i>` : ''}${w >= 0.5 ? `<div class="fill" style="width:${w.toFixed(1)}%"></div>` : ''}${t != null ? `<i class="typ-tk" style="left:${t.toFixed(1)}%"></i>` : ''}</div></div>`;
+}
+function cardHTML(s) {
+  const c = calc(s);
+  let big, chgLine;
+  if (s.kind === 'm') {
+    big = s.avg ? `${man(s.avg).replace(' 원', '')}<small>평균 매매가</small>` : nf(c.last, 1);
+    chgLine = s.week ? `지난주 ${chg(s.week.r)}` : '';
+  } else {
+    big = `${price(s, c.last)}<small>${subPrice(s)}</small>`;
+    chgLine = s.L ? `전일 대비 ${chg(s.L.p / s.L.prev - 1)}` : '';
+  }
+  return `<button class="card${S.sel === s.id ? ' on' : ''}" data-id="${s.id}">
+    <div class="c-top"><span class="c-name">${s.name}</span><span class="c-desc">${s.desc}${s.cur === 'KRW' ? ' · 원화' : ''}</span>${stateText(s)}</div>
+    <div class="c-price num">${big}</div>
+    <div class="c-chg">${chgLine}</div>
+    <div class="c-row"><span>흐름 ${trendHTML(trendOf(s), false)}</span><span>올해 <b class="${ud(c.ytd)}">${pct(c.ytd)}</b></span><span>연평균 <b>${pct(c.cagr)}</b> <span class="muted">(${spanLabel(s)})</span></span></div>
+    ${gaugeHTML(c)}
+  </button>`;
+}
+function renderCards() {
+  const list = S.assets.map((a) => series(a.id));
+  const seoul = S.aptRows.find((x) => x.seoul);
+  if (seoul) list.push(series(seoul.id));
+  $('#cards').innerHTML = list.map(cardHTML).join('');
+  $('#cardsFin').innerHTML = list.filter((s) => s.kind !== 'm').map(cardHTML).join('');
+}
+
+// ── 자세히 ───────────────────────────────────
+function renderDetail() {
+  const s = series(S.sel);
+  const el = $('#detail');
+  if (!s || (S.tab !== 'fin' && S.tab !== 'apt')) { el.hidden = true; return; }
+  el.hidden = false;
+  const c = calc(s), mo = s.kind === 'm';
+  const fromY = new Date(s.d[0] * DAY).getUTCFullYear();
+  let head;
+  if (mo) {
+    const sq = s.sqm ? `㎡당 <b class="num" style="font-size:22px">${man(s.sqm)}</b> <span class="muted">(3.3㎡당 ${man(s.sqm * 3.3058)} · ${s.sqmDate.slice(0, 4)}.${s.sqmDate.slice(4)})</span>` : '';
+    const av = s.avg ? `<div class="d-price">평균 매매가 <b class="num">${man(s.avg)}</b></div>` : '';
+    head = `${av}<div class="d-price">${sq}</div><div class="d-price">KB 매매가격지수 <b class="num" style="font-size:18px">${nf(c.last, 1)}</b> ${s.week ? `지난주 ${chg(s.week.r)} <span class="muted">(${dstr(s.week.day)} 주간)</span>` : ''}</div>`;
+  } else {
+    const L = s.L, fx = S.live && S.live.q.FX;
+    head = `<div class="d-price"><b class="num">${price(s, c.last)}</b>${L ? chg(L.p / L.prev - 1) : ''} <span class="muted">${subPrice(s)}${L ? ` · ${L.open ? (s.h24 ? '24시간 거래' : '장중 실시간') : dstr(L.day) + ' 마감'}` : ''}${s.cur === 'KRW' && fx ? ` · 환율 ${nf(fx.p, 1)}원 적용` : ''}</span></div>`;
+  }
+  const kpi = (k, v, sub, cls = '') => `<div class="kpi"><div class="k">${k}</div><div class="v num ${cls}">${v}</div><div class="s">${sub}</div></div>`;
+  const ytdSub = c.ytdBase != null ? `${dstr(c.ytdBase, mo)} 대비` : '';
+  const mddSub = `${dstr(s.d[c.mP], mo)} → ${dstr(s.d[c.mT], mo)}`;
+  const ath = s.v[c.athI];
+  el.innerHTML = `
+    <div class="d-head"><div><h2>${s.name}<span>${s.desc} · ${s.basis} 기준</span></h2>${head}</div></div>
+    <div class="kpis">
+      ${kpi('올해 수익률', pct(c.ytd), ytdSub, ud(c.ytd))}
+      ${kpi(`연평균 ${spanLabel(s).endsWith('~') ? '(' + fromY + '~)' : MAX_YEARS + '년'}`, pct(c.cagr), `${dstr(s.d[0], mo)}부터 ${c.yrs.toFixed(1)}년, 복리`)}
+      ${kpi('연평균 10년', c.c10 == null ? '–' : pct(c.c10), '최근 10년, 복리')}
+      ${kpi('연평균 5년', c.c5 == null ? '–' : pct(c.c5), '최근 5년, 복리')}
+      ${kpi('평범한 해의 하락', c.iddMed == null ? '–' : pct(c.iddMed), c.iddNow == null ? '연중 최대 하락의 가운데 값' : `올해 지금까지 ${pct(c.iddNow)} · 평균 ${pct(c.iddMean)}`, 'dn')}
+      ${kpi('최대 낙폭 (MDD)', pct(c.mdd), mddSub, 'dn')}
+      ${kpi('지금 고점 대비', peakTxt(c.cur), `최고 ${dstr(s.d[c.athI], mo)} ${mo ? nf(ath, 1) : price(s, ath)}`, c.cur < -0.0005 ? 'dn' : '')}
+    </div>
+    ${basisTable(s.id)}
+    ${whereHTML(s, c)}
+    <div class="toolbar">
+      ${[['1y', '1년'], ['3y', '3년'], ['5y', '5년'], ['10y', '10년'], ['20y', mo ? '전체' : '20년']].map(([k, t]) => `<button class="chip${S.period === k ? ' on' : ''}" data-period="${k}">${t}</button>`).join('')}
+      <label><input type="checkbox" id="logBox" ${S.log ? 'checked' : ''}> 비율 눈금 <span class="muted">(오래된 기간도 오르내림이 같은 크기로 보여요)</span></label>
+    </div>
+    <div class="ch-title">${mo ? '매매가격지수' : '가격'} <span class="muted" style="font-weight:400">${s.basis} · 가는 선 = 지금까지 최고</span></div>
+    <div class="chart" id="cPrice"></div>
+    <div class="ch-title">고점 대비 하락률 <span class="muted" style="font-weight:400">0% = 그날까지의 최고가, 아래로 내려갈수록 많이 빠진 것</span></div>
+    <div class="chart" id="cDD"></div>
+    <h3 class="sec">해마다 수익률</h3>
+    <p class="note">${yearNote(c)}</p>
+    <div class="chart" id="cYears"></div>
+    <h3 class="sec">큰 하락 구간 <span class="muted" style="font-weight:400;font-size:13px">(${pct(c.thr, 0)} 넘게 빠진 때, 깊은 순)</span></h3>
+    <div class="tbl-wrap">${epsTable(s, c)}</div>
+    ${s.joined && s.d[0] < s.joined.to ? `<p class="note">※ ${dstr(s.joined.to)} 상장 전 기간은 같은 S&P 500 지수를 따르는 ${s.joined.sym}로 이어 붙였어요 (20년을 채우려고).</p>` : ''}`;
+  drawCharts(s, c);
+}
+// 달러 자산이면 달러 기준·원화 기준을 나란히
+function basisTable(id) {
+  const a = S.assets.find((x) => x.id === id);
+  if (!a || a.cur !== 'USD' || !S.assets.some((x) => x.id === 'FX')) return '';
+  const su = series(id, false), sk = series(id, true), cu = calc(su), ck = calc(sk);
+  const fx = series('FX');
+  const row = (t, f, colored) => {
+    const x = f(cu), y = f(ck);
+    const diff = x == null || y == null ? '–' : `${y - x >= 0 ? '+' : MINUS}${Math.abs((y - x) * 100).toFixed(1)}%p`;
+    return `<tr><td>${t}</td><td class="num ${colored ? ud(x) : ''}">${pct(x)}</td><td class="num ${colored ? ud(y) : ''}">${pct(y)}</td><td class="num muted">${diff}</td></tr>`;
+  };
+  const fxFrom = fx.v[Math.max(0, idxBefore(fx.d, sk.d[0]) )];
+  return `<h3 class="sec">달러 기준과 원화 기준 <span class="muted" style="font-weight:400;font-size:13px">지금 보는 기준: ${S.krw ? '원화' : '달러'} (맨 위에서 바꿔요)</span></h3>
+    <div class="tbl-wrap" style="max-width:620px"><table><thead><tr><th></th><th>달러 기준</th><th>원화 기준</th><th>환율 효과</th></tr></thead><tbody>
+    ${row('올해', (c) => c.ytd, true)}${row(`연평균 ${spanLabel(su)}`, (c) => c.cagr)}${row('연평균 10년', (c) => c.c10)}${row('연평균 5년', (c) => c.c5)}${row('평범한 해의 하락', (c) => c.iddMed)}${row('최대 낙폭', (c) => c.mdd)}${row('지금 고점 대비', (c) => c.cur)}
+    </tbody></table></div>
+    <p class="note">원화 기준 = 그날 값에 그날 원/달러 환율을 곱한 것. 같은 기간 환율 ${nf(fxFrom, 0)}원 → ${nf(fx.v[fx.v.length - 1], 0)}원. 환율이 오르면(원화 약세) 원화 수익이 커지고, 위기 때 환율이 뛰면 원화 기준 낙폭이 작아져요.</p>`;
+}
+function whereHTML(s, c) {
+  const mo = s.kind === 'm';
+  const scaleMin = Math.min(-0.1, Math.floor(c.mdd * 10 - 0.0001) / 10);
+  const pos = (x) => Math.min(100, Math.max(0, (x / scaleMin) * 100));
+  const step = scaleMin <= -0.5 ? 0.2 : 0.1;
+  const scale = [];
+  for (let x = 0; x >= scaleMin - 1e-9; x -= step) scale.push(`<span class="sc" style="left:${pos(x)}%">${x === 0 ? '최고' : pct(x, 0)}</span>`);
+  const eps = c.eps.filter((e) => e.r !== -1).map((e) => `<i class="ep" style="left:${pos(e.depth)}%" title="${dstr(s.d[e.p], mo)}~ ${pct(e.depth)}"></i>`).join('');
+  const nowLeft = pos(c.cur);
+  const lines = [];
+  const tr = trendOf(s);
+  if (tr) lines.push(`지금 흐름 ${trendHTML(tr)} — 가격이 ${tr.lbl[0]} 평균보다 ${tr.p >= tr.m1 ? '위' : '아래'}, ${tr.lbl[0]} 평균이 ${tr.lbl[1]} 평균보다 ${tr.m1 >= tr.m2 ? '위' : '아래'}에 있어요.`);
+  const ath = s.v[c.athI];
+  const athTxt = mo ? `지수 ${nf(ath, 1)}` : price(s, ath);
+  if (c.cur > -0.005) lines.push(`지금은 <b>최고가 근처</b>예요 (최고 ${dstr(s.d[c.athI], mo)} ${athTxt}).`);
+  else lines.push(`최고가(${dstr(s.d[c.athI], mo)} ${athTxt})보다 <b class="dn">${pct(c.cur)}</b> 낮아요. 고점에서 ${dur(c.lastD - s.d[c.athI])} 지났어요.`);
+  const pk = prevPeak(s, c);
+  if (mo && pk && !pk.ongoing) { // 전고점은 부동산만 (주식은 전고점을 계속 넘어가는 게 보통)
+    const head = `<b>전고점</b>(평범한 해 하락 ${pct(pk.thr)}보다 깊게 빠지기 직전의 고점, ${dstr(pk.day, mo)} ${mo ? '지수 ' + nf(pk.val, 1) : price(s, pk.val)} → 그 뒤 ${dstr(pk.lowDay, mo)}까지 ${pct(pk.depth)})`;
+    lines.push(pk.now >= 0
+      ? `${head}보다 <b class="up">${pct(pk.now)}</b> 올라와 있어요` + (pk.p != null ? ` — 지난 기록에서 전고점을 이만큼 넘어 있던 때는 상위 ${Math.max(1, Math.round((1 - pk.p) * 100))}%예요.` : '.')
+      : `${head}보다 <b class="dn">${pct(pk.now)}</b> 아래예요 (그 하락을 회복했다가 다시 내려온 상태).`);
+  }
+  const fall = dur(s.d[c.mT] - s.d[c.mP]);
+  const rec = c.mR >= 0 ? `다시 고점까지 ${dur(s.d[c.mR] - s.d[c.mT])}` : '아직 그 고점을 되찾지 못했어요';
+  lines.push(`역대 최대 하락은 <b>${dstr(s.d[c.mP], mo)} → ${dstr(s.d[c.mT], mo)} ${pct(c.mdd)}</b>: 떨어지는 데 ${fall}, ${rec}.`);
+  if (c.cur < -0.005) lines.push(`${new Date(s.d[0] * DAY).getUTCFullYear()}년부터 지금보다 더 깊이 빠져 있던 때는 전체 기간의 <b>${pct(c.deeperShare, 0, false)}</b>예요.`);
+  const lv = mo ? [-0.05, -0.1, -0.2] : [-0.1, -0.2, -0.3, -0.5];
+  const cnt = lv.map((x) => [x, c.eps.filter((e) => e.depth <= x).length]).filter(([, k]) => k > 0);
+  if (cnt.length) {
+    const first = cnt[0];
+    lines.push(cnt.map(([x, k], i) => `${pct(x, 0)} 넘게 빠진 적 <b>${k}번</b>` + (i === 0 ? ` (평균 ${(c.yrs / first[1]).toFixed(1)}년에 한 번)` : '')).join(', ') + (c.eps.some((e) => e.r === -1) ? ' · 지금 구간 포함' : '') + '.');
+  }
+  // 아파트는 20년으로 계산하지만, 그보다 긴 기록의 역대급 하락(서울 1991~1998)은 따로 알려 준다
+  const full = mo && S.aptRows.find((r) => r.id === s.id);
+  if (full && full.d[0] < s.d[0]) {
+    const fc = calc(full);
+    if (fc.mdd < c.mdd - 0.001) lines.push(`${new Date(full.d[0] * DAY).getUTCFullYear()}년부터 전체 기록으로 보면 최대 낙폭은 <b>${pct(fc.mdd)}</b> (${dstr(full.d[fc.mP], true)} → ${dstr(full.d[fc.mT], true)})예요.`);
+  }
+  if (c.iddMed != null) {
+    lines.push(`<b>평범한 해의 하락</b>: 한 해 안에서 고점 → 저점으로 보통 <b>${pct(c.iddMed)}</b>(가운데 값, 평균 ${pct(c.iddMean)}) 빠졌다가 다시 올라요. ` +
+      `온전한 해 ${c.full.length}번 중 ${pct(c.corrThr, 0)} 넘게 빠진 해가 ${c.corrYears.length}번, 그중 ${c.corrUp}번은 그 해를 플러스로 마쳤어요.` +
+      (c.iddNow != null ? ` 올해는 지금까지 가장 깊게 <b>${pct(c.iddNow)}</b>${c.iddNow <= c.iddMed ? ' — 평범한 해보다 깊어요' : ' — 평범한 해 범위 안이에요'}.` : ''));
+  }
+  const typ = c.iddMed != null ? pos(c.iddMed) : null;
+  return `<div class="where"><h3>지금 하락 위치</h3>
+    <div class="big-g"><div class="track">${typ != null ? `<i class="typ" style="width:${typ.toFixed(1)}%"></i>` : ''}<div class="fill" style="width:${nowLeft.toFixed(1)}%"></div>${typ != null ? `<i class="typ-tk" style="left:${typ.toFixed(1)}%" title="평범한 해의 연중 하락 ${pct(c.iddMed)}"></i>` : ''}</div>${eps}
+      <span class="now" style="left:${nowLeft.toFixed(1)}%">지금 ${pct(c.cur)}</span>${scale.join('')}</div>
+    <ul>${lines.map((l) => `<li>${l}</li>`).join('')}</ul>
+    <p class="note">주황 구간 = 평범한 해의 연중 하락(가운데 값)까지 · 막대 위 짧은 세로선 = 지난 큰 하락들이 바닥에서 얼마나 빠졌었는지(마우스를 올리면 시기).</p></div>`;
+}
+function yearNote(c) {
+  if (!c.full.length) return '';
+  return `온전한 해 ${c.full.length}번 중 오른 해 ${c.up}번(${pct(c.up / c.full.length, 0, false)}) · 해마다 평균 <b>${pct(c.mean)}</b> · 가운데 값 ${pct(c.median)} · 가장 좋은 해 ${c.best.y}년 ${pct(c.best.r)} · 가장 나쁜 해 ${c.worst.y}년 ${pct(c.worst.r)}` +
+    `<br><span class="muted">해마다 평균(산술)은 오르내림이 클수록 실제로 쌓인 연평균(복리) ${pct(c.cagr)}보다 크게 나와요.</span>`;
+}
+function epsTable(s, c) {
+  const mo = s.kind === 'm';
+  const list = c.eps.slice().sort((a, b) => a.depth - b.depth).slice(0, 8);
+  const cur = c.eps.find((e) => e.r === -1);
+  if (cur && !list.includes(cur)) list.push(cur);
+  if (!list.length) return '<p class="note">이 기간에는 큰 하락이 없었어요.</p>';
+  return `<table><thead><tr><th>고점</th><th>저점</th><th>하락폭</th><th>떨어진 기간</th><th>회복까지</th><th>다시 고점</th></tr></thead><tbody>${list.map((e) => `
+    <tr><td>${dstr(s.d[e.p], mo)}</td><td>${dstr(s.d[e.t], mo)}</td><td class="dn num">${pct(e.depth)}</td><td>${dur(s.d[e.t] - s.d[e.p])}</td>
+    <td>${e.r >= 0 ? dur(s.d[e.r] - s.d[e.t]) : '<b>진행 중</b>'}</td><td>${e.r >= 0 ? dstr(s.d[e.r], mo) : `지금 ${pct(c.cur)}`}</td></tr>`).join('')}</tbody></table>`;
+}
+
+// ── 차트 ─────────────────────────────────────
+function niceTicks(lo, hi, count = 5) {
+  const span = hi - lo || Math.abs(hi) || 1;
+  const s0 = span / count, mag = 10 ** Math.floor(Math.log10(s0)), e = s0 / mag;
+  const step = (e >= 7.5 ? 10 : e >= 3.5 ? 5 : e >= 1.5 ? 2 : 1) * mag;
+  const out = [];
+  for (let t = Math.ceil(lo / step) * step; t <= hi + step * 1e-9; t += step) out.push(+t.toPrecision(12));
+  return out;
+}
+function logTicks(lo, hi) {
+  for (const ms of [[1], [1, 2, 5], [1, 1.5, 2, 3, 5, 7], [1, 1.2, 1.4, 1.6, 1.8, 2, 2.5, 3, 4, 5, 6, 7, 8, 9]]) {
+    const r = [];
+    for (let k = Math.floor(Math.log10(lo)) - 1; k <= Math.ceil(Math.log10(hi)); k++) for (const m of ms) { const t = +(m * 10 ** k).toPrecision(6); if (t >= lo && t <= hi) r.push(t); }
+    if (r.length >= 3 && r.length <= 8) return r;
+    if (r.length > 8) return r.filter((_, i) => i % Math.ceil(r.length / 6) === 0);
+  }
+  return niceTicks(lo, hi);
+}
+function xTicks(D0, D1, width) {
+  const span = (D1 - D0) / 365.25, out = [];
+  const maxN = Math.max(3, Math.floor(width / 70));
+  if (span >= 2.5) {
+    const step = [1, 2, 5, 10].find((k) => span / k <= maxN) || 10;
+    const y0 = new Date(D0 * DAY).getUTCFullYear() + 1, y1 = new Date(D1 * DAY).getUTCFullYear();
+    for (let y = Math.ceil(y0 / step) * step; y <= y1; y += step) out.push([jan1(y), String(y)]);
+  } else {
+    const months = span * 12, step = [1, 2, 3, 6].find((k) => months / k <= maxN) || 6;
+    const t = new Date(D0 * DAY);
+    let y = t.getUTCFullYear(), m = t.getUTCMonth() + 1;
+    for (; Date.UTC(y, m, 1) / DAY <= D1; m++) {
+      const day = Date.UTC(y, m, 1) / DAY, mm = ((m % 12) + 12) % 12;
+      if (mm % step === 0 && day >= D0) out.push([day, mm === 0 ? String(new Date(day * DAY).getUTCFullYear()) : `${mm + 1}월`]);
+    }
+  }
+  return out;
+}
+function periodStart(s, lastD) {
+  const n = { '1y': 1, '3y': 3, '5y': 5, '10y': 10 }[S.period]; // '20y' = 기록 전부(주식은 이미 20년으로 잘림, 아파트는 전체)
+  return n ? Math.max(s.d[0], lastD - n * 365.25) : s.d[0];
+}
+// 화면 폭보다 점이 훨씬 많으면 칸마다 처음·최소·최대·끝만 남긴다
+function thin(xs, ys, i0, i1, width) {
+  const out = [], cols = Math.max(50, Math.floor(width * 1.5));
+  if (i1 - i0 < cols * 3) { for (let i = i0; i <= i1; i++) out.push(i); return out; }
+  const per = (i1 - i0 + 1) / cols;
+  for (let c = 0; c < cols; c++) {
+    const a = i0 + Math.floor(c * per), b = Math.min(i1, i0 + Math.floor((c + 1) * per) - 1);
+    if (b < a) continue;
+    let mn = a, mx = a;
+    for (let i = a; i <= b; i++) { if (ys[i] < ys[mn]) mn = i; if (ys[i] > ys[mx]) mx = i; }
+    const set = [...new Set([a, mn, mx, b])].sort((p, q) => p - q);
+    out.push(...set);
+  }
+  return out;
+}
+const H = { };
+function drawCharts(s, c) {
+  const elP = $('#cPrice'), elD = $('#cDD'), elY = $('#cYears');
+  const W = elP.clientWidth || 900;
+  const L = 58, R = 74;
+  const D1 = c.lastD, D0 = periodStart(s, D1);
+  const i0 = Math.max(0, idxBefore(s.d, D0 + 0.5) + 1);
+  const i1 = s.d.length - 1;
+  const X = (day) => L + ((day - D0) / Math.max(1, D1 - D0)) * (W - L - R);
+  const mo = s.kind === 'm';
+  // 가격
+  {
+    const Hh = 250, T = 12, B = 24;
+    let lo = Infinity, hi = -Infinity;
+    for (let i = i0; i <= i1; i++) { if (s.v[i] < lo) lo = s.v[i]; if (s.v[i] > hi) hi = s.v[i]; }
+    const useLog = S.log && lo > 0;
+    const f = useLog ? Math.log : (x) => x;
+    const pad = (f(hi) - f(lo)) * 0.06 || 1;
+    const y0 = f(lo) - pad, y1 = f(hi) + pad;
+    const Y = (v) => T + (1 - (f(v) - y0) / (y1 - y0)) * (Hh - T - B);
+    const ticks = useLog ? logTicks(lo, hi) : niceTicks(lo, hi);
+    const idx = thin(s.d, s.v, i0, i1, W - L - R);
+    let path = '';
+    idx.forEach((i, k) => { path += (k ? 'L' : 'M') + X(s.d[i]).toFixed(1) + ' ' + Y(s.v[i]).toFixed(1); });
+    // 그때그때의 최고가(계단선)
+    let pk = 0; for (let i = 0; i < i0; i++) if (s.v[i] > pk) pk = s.v[i];
+    let ath = '';
+    { let started = false; for (const i of idx) { if (s.v[i] > pk) pk = s.v[i]; ath += (started ? 'L' : 'M') + X(s.d[i]).toFixed(1) + ' ' + Y(pk).toFixed(1); started = true; } }
+    const last = s.v[i1];
+    elP.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" height="${Hh}" role="img" aria-label="${s.name} 가격 흐름">
+      ${ticks.map((t) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${L - 8}" y="${Y(t) + 4}" text-anchor="end">${mo ? nf(t) : axisNum(s, t)}</text>`).join('')}
+      ${xTicks(D0, D1, W - L - R).map(([day, t]) => `<text x="${X(day)}" y="${Hh - 6}" text-anchor="middle">${t}</text>`).join('')}
+      <line class="base" x1="${L}" x2="${W - R}" y1="${Hh - B}" y2="${Hh - B}"/>
+      <path d="${ath}" fill="none" stroke="var(--axis)" stroke-width="1"/>
+      <path d="${path}" fill="none" stroke="var(--price)" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="${X(D1)}" cy="${Y(last)}" r="4" fill="var(--price)" stroke="var(--panel)" stroke-width="2"/>
+      <text class="lbl" x="${X(D1) + 8}" y="${Y(last) + 4}">${mo ? nf(last, 1) : price(s, last)}</text>
+      <line class="xh" id="xhP" y1="${T}" y2="${Hh - B}" hidden/><circle id="dotP" r="4" fill="var(--price)" stroke="var(--panel)" stroke-width="2" hidden/>
+      <rect class="hit" x="${L}" y="0" width="${W - L - R}" height="${Hh}" fill="transparent"/></svg>`;
+    H.price = { Y };
+  }
+  // 고점 대비 하락률
+  {
+    const Hh = 160, T = 10, B = 24;
+    let lo = 0;
+    for (let i = i0; i <= i1; i++) if (c.dd[i] < lo) lo = c.dd[i];
+    lo = Math.min(-0.05, lo * 1.08);
+    const Y = (x) => T + (x / lo) * (Hh - T - B);
+    const ticks = niceTicks(lo, 0, 4).filter((t) => t <= 0);
+    const idx = thin(s.d, c.dd, i0, i1, W - L - R);
+    let line = '';
+    idx.forEach((i, k) => { line += (k ? 'L' : 'M') + X(s.d[i]).toFixed(1) + ' ' + Y(c.dd[i]).toFixed(1); });
+    const area = line + `L${X(s.d[i1]).toFixed(1)} ${Y(0)}L${X(s.d[i0]).toFixed(1)} ${Y(0)}Z`;
+    let mi = i0; for (let i = i0; i <= i1; i++) if (c.dd[i] < c.dd[mi]) mi = i;
+    const mx = X(s.d[mi]), anchor = mx > W - R - 120 ? 'end' : mx < L + 100 ? 'start' : 'middle';
+    elD.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" height="${Hh}" role="img" aria-label="${s.name} 고점 대비 하락률">
+      ${ticks.map((t) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${L - 8}" y="${Y(t) + 4}" text-anchor="end">${t === 0 ? '0%' : pct(t, 0)}</text>`).join('')}
+      ${xTicks(D0, D1, W - L - R).map(([day, t]) => `<text x="${X(day)}" y="${Hh - 6}" text-anchor="middle">${t}</text>`).join('')}
+      <path d="${area}" fill="var(--dn-w)"/>
+      <path d="${line}" fill="none" stroke="var(--dn)" stroke-width="1.5" stroke-linejoin="round"/>
+      <line class="base" x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}"/>
+      ${c.dd[mi] < -0.01 ? `<text class="lbl" x="${mx}" y="${Math.min(Hh - B - 4, Y(c.dd[mi]) + 15)}" text-anchor="${anchor}">${pct(c.dd[mi])} (${dstr(s.d[mi], true)})</text>` : ''}
+      <circle cx="${X(D1)}" cy="${Y(c.cur)}" r="4" fill="var(--dn)" stroke="var(--panel)" stroke-width="2"/>
+      <text class="lbl" x="${X(D1) + 8}" y="${Y(c.cur) + 4}">${pct(c.cur)}</text>
+      <line class="xh" id="xhD" y1="${T}" y2="${Hh - B}" hidden/><circle id="dotD" r="4" fill="var(--dn)" stroke="var(--panel)" stroke-width="2" hidden/>
+      <rect class="hit" x="${L}" y="0" width="${W - L - R}" height="${Hh}" fill="transparent"/></svg>`;
+    H.dd = { Y };
+  }
+  H.s = s; H.c = c; H.X = X; H.D0 = D0; H.D1 = D1; H.L = L; H.R = R; H.W = W; H.i0 = i0;
+  for (const el of [elP, elD]) {
+    const svg = el.querySelector('svg'), hit = svg.querySelector('.hit');
+    hit.addEventListener('mousemove', (e) => hover(e, svg));
+    hit.addEventListener('mouseleave', unhover);
+  }
+  drawYears(elY, s, c, W);
+}
+function hover(e, svg) {
+  const r = svg.getBoundingClientRect();
+  const x = ((e.clientX - r.left) / r.width) * H.W;
+  const day = H.D0 + ((x - H.L) / (H.W - H.L - H.R)) * (H.D1 - H.D0);
+  const s = H.s, c = H.c;
+  let i = idxBefore(s.d, day + 0.5);
+  if (i < H.i0) i = H.i0;
+  if (i + 1 < s.d.length && Math.abs(s.d[i + 1] - day) < Math.abs(s.d[i] - day)) i++;
+  const px = H.X(s.d[i]);
+  const set = (id, attrs) => { const el = document.getElementById(id); if (!el) return; el.removeAttribute('hidden'); for (const k in attrs) el.setAttribute(k, attrs[k]); };
+  set('xhP', { x1: px, x2: px }); set('xhD', { x1: px, x2: px });
+  set('dotP', { cx: px, cy: H.price.Y(s.v[i]) }); set('dotD', { cx: px, cy: H.dd.Y(c.dd[i]) });
+  const mo = s.kind === 'm';
+  showTip(e, `<b>${dstr(s.d[i], mo)}</b><br>${mo ? '지수 ' + nf(s.v[i], 1) : price(s, s.v[i])} · 고점 대비 <span class="${c.dd[i] < -0.0005 ? 'dn' : ''}">${pct(c.dd[i])}</span>`);
+}
+function unhover() {
+  for (const id of ['xhP', 'xhD', 'dotP', 'dotD']) { const el = document.getElementById(id); if (el) el.setAttribute('hidden', ''); }
+  $('#tip').hidden = true;
+}
+function showTip(e, html) {
+  const t = $('#tip');
+  t.innerHTML = html; t.hidden = false;
+  const w = t.offsetWidth, h = t.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY - h - 12;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y < 8) y = e.clientY + 16;
+  t.style.left = x + 'px'; t.style.top = y + 'px';
+}
+function drawYears(el, s, c, W) {
+  const ys = c.years.filter((y) => !y.first);
+  if (!ys.length) { el.innerHTML = ''; return; }
+  const Hh = 200, T = 16, B = 24, L = 58, R = 74;
+  let lo = 0, hi = 0;
+  for (const y of ys) { lo = Math.min(lo, y.r, y.idd); hi = Math.max(hi, y.r); }
+  const ticks = niceTicks(lo, hi, 4);
+  lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+  const Y = (x) => T + ((hi - x) / (hi - lo || 1)) * (Hh - T - B);
+  const band = (W - L - R) / ys.length, bw = Math.max(2, Math.min(28, band - 2));
+  const y0 = Y(0), rad = Math.min(4, bw / 2);
+  const bar = (x, top, bottom, upward) => {
+    const h = bottom - top; if (h < 0.5) return `M${x} ${y0}h${bw}`;
+    const r = Math.min(rad, h);
+    return upward
+      ? `M${x} ${bottom}V${top + r}Q${x} ${top} ${x + r} ${top}H${x + bw - r}Q${x + bw} ${top} ${x + bw} ${top + r}V${bottom}Z`
+      : `M${x} ${top}V${bottom - r}Q${x} ${bottom} ${x + r} ${bottom}H${x + bw - r}Q${x + bw} ${bottom} ${x + bw} ${bottom - r}V${top}Z`;
+  };
+  const every = Math.max(1, Math.ceil(ys.length / Math.max(4, Math.floor((W - L - R) / 46))));
+  const bars = ys.map((y, k) => {
+    const x = L + k * band + (band - bw) / 2, yy = Y(y.r);
+    const d = y.r >= 0 ? bar(x, yy, y0, true) : bar(x, y0, yy, false);
+    return `<path d="${d}" fill="var(--${y.r >= 0 ? 'up' : 'dn'})" opacity="${y.part ? 0.45 : 1}"/>` +
+      (y.idd < -0.0005 ? `<circle cx="${x + bw / 2}" cy="${Y(y.idd)}" r="${Math.min(4, Math.max(2.5, bw / 4))}" fill="var(--ink)" opacity=".7" stroke="var(--panel)" stroke-width="1.5"/>` : '') +
+      ((ys.length - 1 - k) % every === 0 ? `<text x="${x + bw / 2}" y="${Hh - 6}" text-anchor="middle">${y.part ? '올해' : y.y}</text>` : '') +
+      `<rect class="yhit" data-k="${k}" x="${L + k * band}" y="${T}" width="${band}" height="${Hh - T - B}" fill="transparent"/>`;
+  }).join('');
+  const mean = c.mean;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" height="${Hh}" role="img" aria-label="${s.name} 해마다 수익률">
+    ${ticks.map((t) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${L - 8}" y="${Y(t) + 4}" text-anchor="end">${t === 0 ? '0%' : pct(t, 0)}</text>`).join('')}
+    ${bars}
+    <line class="base" x1="${L}" x2="${W - R}" y1="${y0}" y2="${y0}"/>
+    ${mean != null ? `<line x1="${L}" x2="${W - R}" y1="${Y(mean)}" y2="${Y(mean)}" stroke="var(--ink)" stroke-width="1.5" opacity=".55"/><text class="lbl" x="${W - R + 6}" y="${Y(mean) + 4}">평균 ${pct(mean)}</text>` : ''}
+    ${c.iddMed != null ? `<line x1="${L}" x2="${W - R}" y1="${Y(c.iddMed)}" y2="${Y(c.iddMed)}" stroke="var(--accent)" stroke-width="1.5" opacity=".8"/><text class="lbl" x="${W - R + 6}" y="${Y(c.iddMed) + 4}">보통 ${pct(c.iddMed)}</text>` : ''}
+  </svg>
+  <p class="note">막대 = 그 해 수익률 · 점 = 그 해 안에서 고점 → 저점으로 가장 많이 빠졌던 폭(연중 최대 하락) · 주황선 = 연중 최대 하락의 가운데 값</p>`;
+  el.querySelectorAll('.yhit').forEach((r) => {
+    r.addEventListener('mousemove', (e) => { const y = ys[+r.dataset.k]; showTip(e, `<b>${y.y}년${y.part ? ' (진행 중)' : ''}</b><br>수익률 <span class="${ud(y.r)}">${pct(y.r)}</span><br>연중 최대 하락 <span class="dn">${pct(y.idd)}</span>`); });
+    r.addEventListener('mouseleave', () => { $('#tip').hidden = true; });
+  });
+}
+
+// ── 서울 아파트 표 ────────────────────────────
+const APT_COLS = [
+  ['short', '지역', (r) => r.short],
+  ['sqm', '㎡당 평균 매매가', (r) => r.sqm],
+  ['pyeong', '3.3㎡당', (r) => r.sqm],
+  ['p84', '국평(84㎡) 환산', (r) => r.sqm],
+  ['week', '지난주', (r) => (r.week ? r.week.r : null)],
+  ['ytd', '올해', (r) => r.c.ytd],
+  ['y1', '1년', (r) => r.c.c1],
+  ['cagr', '연평균', (r) => r.c.cagr],
+  ['c10', '연평균 10년', (r) => r.c.c10],
+  ['mdd', '최대 낙폭', (r) => r.c.mdd],
+  ['cur', '지금 고점 대비', (r) => r.c.cur],
+];
+function renderApt() {
+  if (!S.aptRows.length) return;
+  // 아파트는 KB 기록 전체: 서울 1986~, 구는 구별 지수가 시작된 2002.12~
+  const rows = S.aptRows.map((r) => ({ ...r, c: calc(series(r.id)) }));
+  const start = Math.min(...rows.filter((r) => !r.seoul).map((r) => r.d[0]));
+  const seoulStart = (rows.find((r) => r.seoul) || rows[0]).d[0];
+  const col = APT_COLS.find((x) => x[0] === S.sort.key) || APT_COLS.find((x) => x[0] === 'cur');
+  const val = (r) => { const v = col[2](r); return v == null ? (S.sort.dir > 0 ? Infinity : -Infinity) : v; };
+  const seoul = rows.find((r) => r.seoul), others = rows.filter((r) => !r.seoul);
+  others.sort((a, b) => (col[0] === 'short' ? a.short.localeCompare(b.short, 'ko') * S.sort.dir : (val(a) - val(b)) * S.sort.dir));
+  const list = [seoul, ...others].filter(Boolean);
+  const fromTxt = dstr(start, true);
+  $('#aptNote').innerHTML = `최근 20년(<b>${dstr(seoulStart, true)}부터</b>)으로 계산 · 지수는 매달, '지난주'는 KB 주간 ${list[0] && list[0].week ? dstr(list[0].week.day) : ''} 기준 · 아파트는 실시간 시세가 없어 주 1회 바뀌어요. 줄을 누르면 위에 자세히 나와요.`;
+  const head = APT_COLS.map(([k, t]) => `<th data-k="${k}" class="${S.sort.key === k ? 'sorted' + (S.sort.dir > 0 ? ' asc' : '') : ''}">${t}</th>`).join('');
+  const body = list.map((r) => {
+    const c = r.c, w = c.mdd < 0 ? Math.min(100, (c.cur / c.mdd) * 100) : 0;
+    return `<tr data-id="${r.id}" class="${r.seoul ? 'seoul' : ''}${S.sel === r.id ? ' on' : ''}">
+      <td>${r.short}</td>
+      <td class="num">${r.sqm ? nf(Math.round(r.sqm)) + '만' : '–'}</td>
+      <td class="num">${r.sqm ? man(r.sqm * 3.3058).replace(' 원', '') : '–'}</td>
+      <td class="num">${r.sqm ? eok(r.sqm * 84) : '–'}</td>
+      <td class="num">${r.week ? chg(r.week.r) : '–'}</td>
+      <td class="num ${ud(c.ytd)}">${pct(c.ytd)}</td>
+      <td class="num ${ud(c.c1)}">${pct(c.c1)}</td>
+      <td class="num">${pct(c.cagr)}</td>
+      <td class="num">${c.c10 == null ? '–' : pct(c.c10)}</td>
+      <td class="num dn">${pct(c.mdd)}</td>
+      <td class="num">${peakTxt(c.cur)}<span class="mini" title="역대 최대 하락 대비 지금 위치">${w >= 1 ? `<i style="width:${w.toFixed(0)}%"></i>` : ''}</span></td></tr>`;
+  }).join('');
+  $('#aptTable').innerHTML = `<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
+}
+
+// ── 구별 전고점 대비 ──────────────────────────
+// 전고점 = 서울 전체가 가장 최근에 5% 넘게 빠졌던 하락(2022~2024)의 고점 앞뒤에서 그 구가 찍은 최고점
+function peakList() {
+  const rows = S.aptRows.map((r) => series(r.id));
+  const seoul = rows.find((r) => r.seoul);
+  const cs = calc(seoul), ep = cs.eps[cs.eps.length - 1];
+  if (!ep) return null;
+  const P = seoul.d[ep.p], T = seoul.d[ep.t];
+  const list = rows.map((s) => {
+    let pk = -1;
+    // 지수가 몇 달 같은 값으로 머물 때가 있어, 고점은 같은 값 중 마지막 달·회복은 고점을 '넘은' 달로
+    for (let i = 0; i < s.d.length; i++) if (s.d[i] >= P - 366 && s.d[i] <= T && (pk < 0 || s.v[i] >= s.v[pk])) pk = i;
+    if (pk < 0) return null;
+    let rec = -1;
+    for (let i = pk + 1; i < s.d.length; i++) if (s.v[i] > s.v[pk]) { rec = i; break; }
+    let lo = pk;
+    for (let i = pk; i <= (rec < 0 ? s.d.length - 1 : rec); i++) if (s.v[i] < s.v[lo]) lo = i;
+    return { s, pk, lo, rec, drop: s.v[lo] / s.v[pk] - 1, now: s.v[s.v.length - 1] / s.v[pk] - 1 };
+  }).filter(Boolean);
+  return { list, seoul, ep };
+}
+function renderPeaks() {
+  const el = $('#peaks');
+  if (!S.aptRows.length) return;
+  const PL = peakList();
+  if (!PL) { el.innerHTML = '<p class="note">서울 전체가 5% 넘게 빠진 적이 없어 전고점을 정하지 못했어요.</p>'; return; }
+  const { list, seoul, ep } = PL;
+  const top = list.filter((x) => x.s.seoul), gu = list.filter((x) => !x.s.seoul).sort((a, b) => a.now - b.now);
+  const all = [...top, ...gu];
+  const dmin = Math.min(-0.05, ...all.map((x) => x.drop)) * 1.08, dmax = Math.max(0.05, ...all.map((x) => x.now)) * 1.08;
+  const pos = (x) => ((x - dmin) / (dmax - dmin)) * 100;
+  const ticks = niceTicks(dmin, dmax, 6).filter((t) => t > dmin && t < dmax);
+  const grid = ticks.filter((t) => Math.abs(t) > 1e-9).map((t) => `<i class="g" style="left:${pos(t).toFixed(2)}%"></i>`).join('');
+  const below = gu.filter((x) => x.now < -0.0005), above = gu.filter((x) => x.now >= -0.0005);
+  const best = gu.slice().sort((a, b) => b.now - a.now)[0];
+  const sum = `서울 전체 전고점은 <b>${dstr(seoul.d[ep.p], true)}</b>, 바닥은 ${dstr(seoul.d[ep.t], true)}(${pct(ep.depth)})예요. 25개 구 중 전고점을 다시 넘은 곳 <b>${above.length}곳</b>, 아직 아래인 곳 <b>${below.length}곳</b>` +
+    (below.length ? `(${below.map((x) => `${x.s.short} ${pct(x.now)}`).join(', ')})` : '') +
+    (best ? ` · 가장 많이 넘은 곳 ${best.s.short} ${pct(best.now)}` : '') + '.';
+  const row = (x) => {
+    const s = x.s, up = x.now >= 0;
+    return `<div class="pk-row${s.seoul ? ' seoul' : ''}${S.sel === s.id ? ' on' : ''}" data-id="${s.id}" title="${s.short}: 전고점 ${dstr(s.d[x.pk], true)} → 바닥 ${pct(x.drop)} → 지금 ${pct(x.now)}">
+      <span>${s.short}</span>
+      <div class="pk-bar">${grid}
+        <i class="drop" style="left:${pos(x.drop).toFixed(2)}%;width:${(pos(0) - pos(x.drop)).toFixed(2)}%"></i>
+        ${up ? `<i class="rise" style="left:${pos(0).toFixed(2)}%;width:${(pos(x.now) - pos(0)).toFixed(2)}%"></i>` : ''}
+        <i class="z" style="left:${pos(0).toFixed(2)}%"></i>
+        <i class="low" style="left:${pos(x.drop).toFixed(2)}%"></i>
+        <i class="cur" style="left:${pos(x.now).toFixed(2)}%;background:var(--${up ? 'up' : 'dn'})"></i>
+      </div>
+      <span class="pk-txt"><b class="${ud(x.now)}">${pct(x.now)}</b> · 고점 ${dstr(s.d[x.pk], true)} · 바닥 ${pct(x.drop)} · ${x.rec >= 0 ? dstr(s.d[x.rec], true) + ' 회복' : '아직 회복 전'}</span>
+    </div>`;
+  };
+  el.innerHTML = `<p class="pk-sum">${sum}</p>
+    <div class="pk-axis"><span></span><div class="pk-bar">${ticks.map((t) => `<span style="left:${pos(t).toFixed(2)}%">${Math.abs(t) < 1e-9 ? '전고점' : pct(t, 0)}</span>`).join('')}</div><span>지금 전고점 대비 · 전고점 시기 · 바닥 · 회복</span></div>
+    ${all.map(row).join('')}
+    <p class="note">세로선 = 그 구의 전고점 · 옅은 파랑 = 전고점에서 바닥까지 빠졌던 폭 · 점 = 지금 (빨강은 전고점을 넘음, 파랑은 아직 아래) · 빨간 막대 = 전고점보다 오른 만큼 · 줄을 누르면 위에 자세히 나와요.<br>
+    KB 매매가격지수는 중개업소가 매기는 시세라 실거래가보다 덜 빠지고 늦게 움직여요. 2022~2024 하락도 실거래가로는 서울이 20% 넘게 빠졌지만 이 지수로는 ${pct(ep.depth)}로 나와요.</p>`;
+}
+
+// ── 자산 온도 ─────────────────────────────────
+// 자산 배분용(현금 제외): 비싼 자산을 줄이고 상대적으로 싼 자산으로 옮기기 위한 점수. 환율(달러)은 현금이라 뺀다.
+// 절대 온도 = '얼마나 올랐나'(+쪽·−쪽 모두) + '얼마나 빠졌나'(−쪽만)
+//   얼마나 올랐나: 최근 1년·3년·5년 수익률(연)이 역사적 연평균보다 얼마나 높은지 (그 자산의 해마다 오르내림 폭으로 나눠 자산끼리 견줄 수 있게)
+//     5년도 보는 이유: 올해 많이 올랐어도 5년 수익률이 장기 평균에 못 미치면(예: SCHD·서울 아파트) 길게 보면 지나치게 오른 건 아니라서
+//     부동산만 전고점도 보되, 전고점 뒤 흐른 시간 동안 장기 평균만큼 오른 몫은 빼고 센다 (4년 지나 +14%면 평균 속도보다 느린 것)
+//     주식은 전고점을 계속 넘어가는 게 보통이라 금융은 수익률로만
+//   얼마나 빠졌나: 고점 대비 하락이 평범한 해 하락의 몇 배인지, 역대 최대 하락(MDD)의 몇 %인지 — 빠진 만큼 '싼 쪽'으로만 센다.
+//     고점 근처에 있는 것 자체는 비싸다는 뜻이 아니다 (오르는 자산은 대부분의 날을 고점 근처에서 보내고, 아파트는 평범한 해 하락이 −1%도 안 돼 거의 늘 최고가)
+// 상대 순위 = 자산끼리 절대 온도 순위. 종합 = 절대 온도와 상대 순위의 평균.
+const clamp1 = (x) => Math.max(-1, Math.min(1, x));
+const avgOf = (xs) => { const a = xs.filter((x) => x != null && isFinite(x)); return a.length ? a.reduce((p, q) => p + q, 0) / a.length : null; };
+// 지금 값(마지막)이 지난 값들 가운데 몇 %보다 높은지 (구별 비교·갈아타기에 씀)
+function pctRank(arr) {
+  const xs = arr.filter((x) => x != null), now = xs[xs.length - 1];
+  let below = 0;
+  for (const x of xs) if (x < now) below++;
+  return xs.length > 1 ? below / (xs.length - 1) : 0.5;
+}
+const topPct = (p) => `상위 ${Math.max(1, Math.round((1 - p) * 100))}%`;
+// 전고점 = 그 자산의 '평범한 해의 하락'보다 깊게 빠졌던 가장 최근 하락이 시작되기 직전의 고점 (아파트는 최소 5%).
+//   모든 자산에 같은 −10%를 쓰면, 같은 시장 흔들림에도 VOO(−8.9%)는 안 걸리고 QQQ(−12%)만 걸려 기준 시점이 엇갈렸다.
+//   자산마다 평소 출렁임만큼을 기준으로 삼아 '진짜 조정'만 센다. 그 하락을 넘어섰으면 플러스, 아직 그 하락 중이면 마이너스.
+function prevPeak(s, c) {
+  const thr = Math.min(c.iddMed != null ? c.iddMed : -0.1, -0.05), v = s.v;
+  let pI = 0, inDD = false, t = 0, last = null;
+  for (let i = 0; i < v.length; i++) {
+    if (v[i] >= v[pI]) {
+      if (inDD && v[t] / v[pI] - 1 <= thr) last = { p: pI, t, r: i };
+      inDD = false; pI = i;
+    } else {
+      if (!inDD) { inDD = true; t = i; }
+      if (v[i] < v[t]) t = i;
+    }
+  }
+  if (inDD && v[t] / v[pI] - 1 <= thr) last = { p: pI, t, r: -1 };
+  if (!last) return null;
+  return { now: v[v.length - 1] / v[last.p] - 1, day: s.d[last.p], val: v[last.p], ongoing: last.r === -1, depth: v[last.t] / v[last.p] - 1, thr, lowDay: s.d[last.t] };
+}
+// 지금 흐름: 이동평균선 순서로 본 추세. 일별 자산은 50일·200일, 아파트(매달 값)는 3개월·12개월
+//   상승 = 가격 > 짧은 평균 > 긴 평균, 하락 = 가격 < 짧은 평균 < 긴 평균, 그 밖은 정체(가격이 짧은 평균 위면 단기 반등, 아래면 단기 약세)
+function trendOf(s) {
+  const v = s.v, n = v.length, mo = s.kind === 'm', a = mo ? 3 : 50, b = mo ? 12 : 200;
+  if (n < b + 1) return null;
+  const ma = (k) => { let x = 0; for (let i = n - k; i < n; i++) x += v[i]; return x / k; };
+  const p = v[n - 1], m1 = ma(a), m2 = ma(b), lbl = mo ? ['3개월', '12개월'] : ['50일', '200일'];
+  const base = { p, m1, m2, lbl };
+  if (p > m1 && m1 > m2) return { ...base, k: 'up', t: '상승', sub: '' };
+  if (p < m1 && m1 < m2) return { ...base, k: 'dn', t: '하락', sub: '' };
+  return { ...base, k: 'flat', t: '정체', sub: p >= m1 ? '단기 반등' : '단기 약세' };
+}
+const trendHTML = (tr, withSub = true) => (tr ? `<span class="tr tr-${tr.k}">${tr.k === 'up' ? '↗' : tr.k === 'dn' ? '↘' : '→'} ${tr.t}${withSub && tr.sub ? `<small>${tr.sub}</small>` : ''}</span>` : '–');
+function absTemp(s) {
+  const c = calc(s), pk = prevPeak(s, c);
+  const rs = c.full.map((x) => Math.log(1 + x.r)), m = avgOf(rs) || 0;
+  const sd = Math.max(0.02, Math.sqrt(avgOf(rs.map((r) => (r - m) ** 2)) || 0)); // 해마다 (로그)수익률의 오르내림 폭
+  const lc = Math.log(1 + c.cagr), ex = (r, h) => (r == null ? null : (Math.log(1 + r) - lc) / (sd / Math.sqrt(h)));
+  const z = avgOf([ex(c.c1, 1), ex(c.c3, 3), ex(c.c5, 5)]);
+  const A1 = z == null ? null : clamp1(z / 2);
+  let A2 = null; // 전고점은 부동산만, 흐른 시간만큼 장기 평균 상승분을 빼고
+  if (s.kind === 'm' && pk && !pk.ongoing) {
+    const yrs = Math.max(0.5, (s.d[s.d.length - 1] - pk.day) / 365.25);
+    A2 = clamp1((Math.log(1 + pk.now) - yrs * lc) / (sd * Math.sqrt(yrs)) / 2);
+  }
+  const A3 = c.iddMed < 0 ? -Math.min(1, c.cur / c.iddMed / 2) : null; // 평범한 해 하락의 2배면 −1
+  const A4 = c.mdd < 0 ? -Math.min(1, c.cur / c.mdd) : null; // 역대 최대 하락만큼이면 −1
+  const rise = avgOf([A1, A2]) || 0, fall = avgOf([A3, A4]) || 0;
+  return { s, c, pk, rise, fall, abs: Math.round(100 * clamp1(rise + fall)) };
+}
+function temps(krw = S.krw) {
+  const list = S.assets.filter((a) => a.id !== 'FX').map((a) => series(a.id, krw));
+  const se = S.aptRows.find((r) => r.seoul);
+  if (se) list.push(series(se.id));
+  const T = list.map(absTemp), n = T.length;
+  T.slice().sort((a, b) => a.abs - b.abs).forEach((t, i) => { t.rank = n - i; t.rel = Math.round(100 * (n > 1 ? (2 * i) / (n - 1) - 1 : 0)); });
+  T.forEach((t) => { t.score = Math.round((t.abs + t.rel) / 2); });
+  return T.sort((a, b) => b.score - a.score);
+}
+// 온도는 숫자 대신 말로만: 비싸다 · 약간 비싸다 · 보통 · 약간 싸다 · 싸다 (안에서는 −100~+100 점수로 정함)
+const verdict = (x) => (x >= 40 ? '비싸다' : x >= 15 ? '약간 비싸다' : x > -15 ? '보통' : x > -40 ? '약간 싸다' : '싸다');
+const vTag = (x) => `<b class="${vClass(x)}">${verdict(x)}</b>`;
+const vClass = (x) => (x >= 15 ? 'up' : x <= -15 ? 'dn' : '');
+const aName = (s) => (s.kind === 'm' ? '서울 아파트' : s.id === 'GLD' ? '금(GLD)' : s.name);
+function scoreBar(x) {
+  const w = Math.min(50, Math.abs(x) / 2);
+  return `<span class="tbar" title="왼쪽 = 싼 쪽, 오른쪽 = 비싼 쪽"><i style="left:${x >= 0 ? 50 : 50 - w}%;width:${w}%;background:var(--${x >= 0 ? 'up' : 'dn'})"></i></span>`;
+}
+function renderTemp() {
+  const el = $('#temp');
+  if (!S.assets.length) return;
+  const T = temps(), n = T.length, hot = T[0], cold = T[n - 1];
+  // 달러 자산은 다른 기준(달러↔원화)의 판정도 작게
+  const alt = new Map(temps(!S.krw).map((t) => [t.s.id, t]));
+  const altLbl = S.krw ? '달러' : '원화';
+  el.innerHTML = `<div class="d-head"><h2>자산 온도<span>자산 배분용 · 현금 제외 · 비싸다 · 약간 비싸다 · 보통 · 약간 싸다 · 싸다</span></h2></div>
+    <div class="notice"><b>싸다·비싸다는 절대적인 판단이 아니에요.</b> 이 자산의 지난 20년 흐름, 그리고 다른 자산들과 견준 <b>상대적인 온도</b>예요. '비싸다'는 "평소보다, 다른 자산보다 많이 올라 있다"는 뜻일 뿐 떨어진다는 예측이 아니에요. 비싸도 더 오를 수 있고, 싸도 더 내릴 수 있어요. 특히 <b>상승 흐름</b>인 자산은 비싼 구간에서도 한동안 더 오르는 경우가 많아요 — 서울 아파트처럼 한번 오르기 시작하면 몇 년씩 오르는 경향이 있는 자산이 그래요.</div>
+    <p class="pk-sum">지금 가장 비싼 쪽: <b class="up">${aName(hot.s)}</b> · 가장 싼 쪽: <b class="dn">${aName(cold.s)}</b> <span class="muted">(상대적으로)</span></p>
+    <div class="tbl-wrap"><table id="tempTable"><thead><tr><th>자산</th><th>지금 흐름</th><th>최근 수익률(연)</th><th>고점 대비</th><th>평범한 하락의 몇 배</th><th style="text-align:left">온도</th></tr></thead><tbody>
+    ${T.map((t) => { const c = t.c, mo = t.s.kind === 'm', a = alt.get(t.s.id); return `<tr data-id="${t.s.id}" class="${S.sel === t.s.id ? 'on' : ''}">
+      <td>${aName(t.s)}${t.s.cur === 'KRW' ? ' <small class="muted">원화</small>' : ''}</td>
+      <td>${trendHTML(trendOf(t.s))}</td>
+      <td class="num">${[['1년', c.c1], ['3년', c.c3], ['5년', c.c5]].filter(([, r]) => r != null).map(([k, r]) => `${k} <span class="${r > c.cagr ? 'up' : 'dn'}">${pct(r)}</span>`).join(' · ')} <small class="muted">장기 평균 ${pct(c.cagr)}</small></td>
+      <td class="num"><span class="${c.cur < -0.0005 ? 'dn' : 'up'}">${peakTxt(c.cur)}</span> <small class="muted">최대 낙폭 ${pct(c.mdd, 0)}</small>${mo && t.pk ? `<small class="muted">전고점(${dstr(t.pk.day, true)}) 대비 ${pct(t.pk.now)}${t.pk.now >= 0 ? ' 넘음' : ''}</small>` : ''}</td>
+      <td class="num">${c.iddMed < 0 ? (c.cur / c.iddMed).toFixed(1) + '배' : '–'} <small class="muted">보통 ${pct(c.iddMed, 1)}</small></td>
+      <td><div class="tcell">${scoreBar(t.score)}${vTag(t.score)}${a && t.s.cur !== a.s.cur ? `<small>${altLbl} 기준 ${verdict(a.score)}</small>` : ''}</div></td></tr>`; }).join('')}
+    </tbody></table></div>
+    <div class="con-box"><h3>온도를 이렇게 계산한 이유</h3><ul class="why">
+      <li>현금 없이 자산끼리 옮기는 <b>자산 배분 리밸런싱</b>용이에요. 많이 오른 자산을 조금 덜어 많이 빠진 자산으로 옮길 때, 어느 쪽이 더 오르고 더 빠졌는지 한눈에 보려고 만들었어요.</li>
+      <li><b>얼마나 올랐나</b>: 최근 1·3·5년 수익률이 그 자산의 장기 평균보다 얼마나 높은지. 올해만 많이 올랐어도 5년으로 보면 평균에 못 미칠 수 있어 5년까지 같이 봐요. 부동산은 전고점(2022년 고점)을 얼마나 넘었는지도 보되, 그 뒤 흐른 시간 동안 평균대로 올랐을 몫은 빼요(4년 지나 +14%면 평균보다 느린 것). 주식은 전고점을 계속 넘어가는 게 보통이라 수익률로만 봐요.</li>
+      <li><b>얼마나 빠졌나</b>: 고점에서 얼마나 내려왔는지를 그 자산의 평범한 해 하락·역대 최대 하락과 견줘, 빠진 만큼 <b>싼 쪽</b>으로만 셈해요. 고점 근처에 있는 것 자체는 비싸다는 뜻이 아니에요 — 오르는 자산은 대부분의 날을 고점 근처에서 보내고, 아파트는 거의 늘 최고가예요.</li>
+      <li><b>자산끼리 순위</b>: 현금으로 빼는 게 아니라 다른 자산으로 옮기는 것이라, 절대 온도에 자산끼리 순위를 반 섞었어요.</li>
+    </ul></div>
+    <p class="note">지금 흐름 = 가격이 50일·200일 평균보다 위인지 아래인지로 본 추세예요(아파트는 3개월·12개월 평균). 지난 가격 흐름으로 계산한 참고 점수이고, 앞으로의 수익을 맞히는 예측은 아니에요. 투자 권유가 아니에요.</p>`;
+}
+
+// ── 자산 사이 상관관계 ─────────────────────────
+// 시장 자산끼리는 주간 수익률(나라마다 장 닫는 시각이 달라 하루 단위는 어긋남), 아파트가 끼면 월간 수익률.
+// 길게 = 겹치는 기간 전체(주식 쪽 최대 20년), 최근 = 52주(아파트는 12개월). 1년 단위로 굴린 상관들의 범위 안에서 지금 위치도 본다.
+const CORR_LBL = { VOO: 'VOO', SCHD: 'SCHD', QQQ: 'QQQ', GLD: '금', BTC: '비트코인', KOSPI: '코스피', FX: '환율' };
+function periodRets(s, monthly) {
+  const m = new Map();
+  for (let i = 0; i < s.d.length; i++) {
+    const t = new Date(s.d[i] * DAY);
+    m.set(monthly ? t.getUTCFullYear() * 12 + t.getUTCMonth() : Math.floor((s.d[i] + 3) / 7), s.v[i]);
+  }
+  const keys = [...m.keys()].sort((a, b) => a - b), r = new Map();
+  for (let j = 1; j < keys.length; j++) if (keys[j] === keys[j - 1] + 1) r.set(keys[j], m.get(keys[j]) / m.get(keys[j - 1]) - 1);
+  return r;
+}
+function pearson(x, y, a = 0, b = x.length) {
+  const n = b - a;
+  if (n < 3) return null;
+  let sx = 0, sy = 0;
+  for (let i = a; i < b; i++) { sx += x[i]; sy += y[i]; }
+  const mx = sx / n, my = sy / n;
+  let cxy = 0, cxx = 0, cyy = 0;
+  for (let i = a; i < b; i++) { const dx = x[i] - mx, dy = y[i] - my; cxy += dx * dy; cxx += dx * dx; cyy += dy * dy; }
+  return cxx > 0 && cyy > 0 ? cxy / Math.sqrt(cxx * cyy) : null;
+}
+function pairCorr(A, B) {
+  const monthly = A.kind === 'm' || B.kind === 'm', N = monthly ? 12 : 52;
+  const ra = periodRets(A, monthly), rb = periodRets(B, monthly);
+  const keys = [...ra.keys()].filter((k) => rb.has(k)).sort((p, q) => p - q);
+  const x = keys.map((k) => ra.get(k)), y = keys.map((k) => rb.get(k));
+  if (x.length < N * 3) return null;
+  const long = pearson(x, y), recent = pearson(x, y, x.length - N);
+  const roll = [], rollD = [];
+  for (let i = N; i <= x.length; i++) {
+    const r = pearson(x, y, i - N, i);
+    if (r == null) continue;
+    roll.push(r);
+    const k = keys[i - 1];
+    rollD.push(monthly ? Date.UTC(Math.floor(k / 12), k % 12, 15) / DAY : k * 7 - 3 + 4);
+  }
+  let below = 0;
+  for (const r of roll) if (r < recent) below++;
+  const sorted = roll.slice().sort((p, q) => p - q), q = (f) => sorted[Math.min(sorted.length - 1, Math.floor(f * (sorted.length - 1)))];
+  // 최근 1년 상관이 긴 기간 상관과 다른지 (피셔 z 검정, 대략 95%)
+  const fz = (r) => Math.atanh(Math.max(-0.999, Math.min(0.999, r)));
+  const z = (fz(recent) - fz(long)) / Math.sqrt(1 / (N - 3) + 1 / (x.length - 3));
+  return { long, recent, n: x.length, N, monthly, from: keys[0], roll, rollD, p: below / Math.max(1, roll.length - 1), lo: q(0.05), hi: q(0.95), z, diff: Math.abs(z) >= 1.96 };
+}
+const fr = (r) => (r == null ? '–' : `${r >= 0 ? '+' : MINUS}${Math.abs(r).toFixed(2)}`);
+function corrBg(r) {
+  if (r == null) return 'transparent';
+  const a = (0.07 + 0.5 * Math.min(1, Math.abs(r))).toFixed(2);
+  return r >= 0 ? `rgba(227,73,72,${a})` : `rgba(42,120,214,${a})`;
+}
+let CORR = null; // { key: 기준 + 아파트 끝 날짜, list, pairs }
+function corrData() {
+  const list = S.assets.map((a) => series(a.id));
+  const se = S.aptRows.find((r) => r.seoul);
+  if (se) list.push(series(se.id));
+  const key = (S.krw ? 'krw' : 'usd') + list.map((s) => s.id + s.d.length).join();
+  if (CORR && CORR.key === key) return CORR;
+  const pairs = {};
+  for (let i = 0; i < list.length; i++) for (let j = 0; j < i; j++) pairs[list[i].id + '|' + list[j].id] = pairCorr(list[i], list[j]);
+  CORR = { key, list, pairs };
+  return CORR;
+}
+const pairOf = (C, a, b) => C.pairs[a + '|' + b] || C.pairs[b + '|' + a] || null;
+const corrName = (s) => (s.kind === 'm' ? '서울 아파트' : CORR_LBL[s.id] || s.name);
+function corrSentence(pc) {
+  const up = pc.recent > pc.long;
+  const where = pc.p >= 0.5 ? `상위 ${Math.max(1, Math.round((1 - pc.p) * 100))}%` : `하위 ${Math.max(1, Math.round(pc.p * 100))}%`;
+  let what;
+  if (up) what = pc.long < 0.2 && pc.recent >= 0.3 ? '평소 따로 움직이던 둘이 최근엔 같이 움직여요' : '평소보다 더 같이 움직여요';
+  else what = pc.long > 0.2 && pc.recent < 0 ? '평소 같이 움직이던 둘이 최근엔 반대로 움직여요' : pc.recent < 0.2 && pc.long >= 0.3 ? '평소 같이 움직이던 둘이 최근엔 따로 움직여요' : '평소보다 덜 같이 움직여요';
+  return `${what} (1년 단위 상관 중 ${where})`;
+}
+function renderCorr() {
+  const el = $('#corr');
+  if (!S.assets.length) return;
+  const C = corrData(), L = C.list;
+  const all = [];
+  for (let i = 0; i < L.length; i++) for (let j = 0; j < i; j++) { const pc = pairOf(C, L[i].id, L[j].id); if (pc) all.push({ a: L[i], b: L[j], pc }); }
+  const flagged = all.filter((x) => x.pc.diff).sort((p, q) => Math.abs(q.pc.z) - Math.abs(p.pc.z));
+  const selKey = S.corrSel && all.find((x) => x.a.id + '|' + x.b.id === S.corrSel) ? S.corrSel : flagged[0] ? flagged[0].a.id + '|' + flagged[0].b.id : all[0] && all[0].a.id + '|' + all[0].b.id;
+  const matrix = (which, title) => `<div><div class="cm-title">${title}</div><div class="tbl-wrap"><table class="cm"><thead><tr><th></th>${L.slice(0, -1).map((s) => `<th>${corrName(s)}</th>`).join('')}</tr></thead><tbody>
+    ${L.slice(1).map((ri, ii) => { const i = ii + 1; return `<tr><th>${corrName(ri)}</th>${L.slice(0, -1).map((cj, j) => {
+      if (j >= i) return '<td class="blank"></td>';
+      const pc = pairOf(C, ri.id, cj.id), r = pc ? pc[which] : null, key = ri.id + '|' + cj.id;
+      const mark = which === 'recent' && pc && pc.diff ? (pc.recent > pc.long ? '▲' : '▼') : '';
+      const tip = pc ? `${corrName(ri)}–${corrName(cj)}: 길게 ${fr(pc.long)} · 최근 1년 ${fr(pc.recent)} · 1년 단위 범위 ${fr(pc.lo)}~${fr(pc.hi)}${pc.monthly ? ' (월간)' : ' (주간)'}` : '자료 부족';
+      return `<td data-corr="${key}" class="${key === selKey ? 'on' : ''}" style="background:${corrBg(r)}" title="${tip}">${fr(r)}${mark ? `<small> ${mark}</small>` : ''}</td>`;
+    }).join('')}</tr>`; }).join('')}</tbody></table></div></div>`;
+  const sel = all.find((x) => x.a.id + '|' + x.b.id === selKey);
+  const stockIds = ['VOO', 'SCHD', 'QQQ'];
+  el.innerHTML = `<div class="d-head"><h2>자산 사이 상관관계<span>+1 = 똑같이 움직임 · 0 = 서로 무관 · −1 = 반대로 움직임 · 낮을수록 나눠 담는 효과가 큼</span></h2></div>
+    <div class="cm-wrap">${matrix('long', `길게 (겹치는 기간 전체, 주식 쪽 최대 20년)`)}${matrix('recent', '최근 1년 <span class="muted" style="font-weight:400">▲ 평소보다 더 같이 · ▼ 덜 같이 (뚜렷한 차이만)</span>')}</div>
+    <h3 class="sec">최근 1년은 평소 상관을 보이고 있나</h3>
+    <p class="pk-sum">${all.length}쌍 중 <b>${all.length - flagged.length}쌍은 평소와 비슷</b>하고, <b>${flagged.length}쌍</b>이 평소와 뚜렷하게 달라요.</p>
+    ${flagged.length ? `<ul class="why">${flagged.map((x) => `<li><b>${corrName(x.a)}–${corrName(x.b)}</b>: 길게 ${fr(x.pc.long)} → 최근 1년 <b>${fr(x.pc.recent)}</b> — ${corrSentence(x.pc)}</li>`).join('')}</ul>` : ''}
+    ${sel ? `<div class="ch-title" style="margin-top:14px">${corrName(sel.a)}–${corrName(sel.b)} 1년 단위 상관 흐름 <span class="muted" style="font-weight:400">길게 ${fr(sel.pc.long)} · 지금 ${fr(sel.pc.recent)} · 1년 단위 상관의 보통 범위 ${fr(sel.pc.lo)}~${fr(sel.pc.hi)} · 표 칸을 누르면 바뀌어요</span></div><div class="chart" id="corrChart"></div>` : ''}
+    <p class="note">시장 자산끼리는 주간 수익률(한국·미국 장 닫는 시각 차이를 줄이려고), 서울 아파트가 끼면 월간 수익률이에요. 아파트는 최근 1년 값이 12개뿐이라 참고만 하세요(또 KB 지수는 매끄럽게 움직여 상관이 낮게 나와요).
+    '뚜렷한 차이' = 최근 1년 상관이 긴 기간 상관과 통계로 봐서 우연이라 보기 어려울 만큼 다른 것(대략 95% 기준). 보통 범위 = 지난 기록에서 1년 단위로 잰 상관의 가운데 90%. 달러 자산은 맨 위 달러/원화 기준을 따라요.</p>`;
+  if (sel) drawCorrChart($('#corrChart'), sel.pc);
+}
+function drawCorrChart(el, pc) {
+  const W = el.clientWidth || 900, Hh = 170, T = 12, B = 24, L = 58, R = 120;
+  const d = pc.rollD, v = pc.roll, n = v.length, D0 = d[0], D1 = d[n - 1];
+  const X = (day) => L + ((day - D0) / Math.max(1, D1 - D0)) * (W - L - R);
+  const Y = (x) => T + ((1 - x) / 2) * (Hh - T - B);
+  let path = '';
+  v.forEach((x, i) => { path += (i ? 'L' : 'M') + X(d[i]).toFixed(1) + ' ' + Y(x).toFixed(1); });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" height="${Hh}" role="img" aria-label="1년 단위 상관 흐름">
+    ${[-1, -0.5, 0, 0.5, 1].map((t) => `<line class="${t === 0 ? 'base' : 'grid'}" x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${L - 8}" y="${Y(t) + 4}" text-anchor="end">${fr(t).replace('.00', '')}</text>`).join('')}
+    ${xTicks(D0, D1, W - L - R).map(([day, t]) => `<text x="${X(day)}" y="${Hh - 6}" text-anchor="middle">${t}</text>`).join('')}
+    <rect x="${L}" y="${Y(pc.hi)}" width="${W - L - R}" height="${Math.max(1, Y(pc.lo) - Y(pc.hi))}" fill="var(--track)" opacity=".6"/>
+    <line x1="${L}" x2="${W - R}" y1="${Y(pc.long)}" y2="${Y(pc.long)}" stroke="var(--accent)" stroke-width="1.5"/><text class="lbl" x="${W - R + 8}" y="${Y(pc.long) + 4}">길게 ${fr(pc.long)}</text>
+    <path d="${path}" fill="none" stroke="var(--price)" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="${X(D1)}" cy="${Y(v[n - 1])}" r="4" fill="var(--price)" stroke="var(--panel)" stroke-width="2"/>
+    <text class="lbl" x="${X(D1) + 8}" y="${Y(v[n - 1]) + (Math.abs(Y(v[n - 1]) - Y(pc.long)) < 14 ? 16 : 4)}">지금 ${fr(v[n - 1])}</text>
+    <rect class="hit" x="${L}" y="0" width="${W - L - R}" height="${Hh}" fill="transparent"/></svg>
+    <p class="note">회색 띠 = 1년 단위 상관의 보통 범위 · 주황 선 = 긴 기간 상관 · 선 = 그 시점까지 1년 동안의 상관</p>`;
+  const svg = el.querySelector('svg'), hit = svg.querySelector('.hit');
+  hit.addEventListener('mousemove', (e) => {
+    const rc = svg.getBoundingClientRect(), x = ((e.clientX - rc.left) / rc.width) * W;
+    const day = D0 + ((x - L) / (W - L - R)) * (D1 - D0);
+    let i = Math.max(0, idxBefore(d, day + 0.5));
+    if (i + 1 < n && Math.abs(d[i + 1] - day) < Math.abs(d[i] - day)) i++;
+    showTip(e, `<b>${dstr(d[i], pc.monthly)}까지 1년</b><br>상관 ${fr(v[i])}`);
+  });
+  hit.addEventListener('mouseleave', () => { $('#tip').hidden = true; });
+}
+
+// ── 구별 상대 가격 평가 ─────────────────────────
+// 부동산 상대 평가: 강남구 대비 가격 수준이 그 구의 지난 기록 속 어디쯤인지 (평소보다 강남에 바짝 붙어 있으면 상대적으로 비쌈).
+// 과거 기록에서 이 값이 평소보다 높았던 구는 그 뒤 3년 강남보다 덜 올랐다(2013~ 기록, 구 대부분 순위 상관 −0.6~−0.8). 전고점 대비는 참고로만 보여 준다.
+function relRows() {
+  const PL = peakList();
+  if (!PL) return null;
+  const L = levelRows(null);
+  const gu = PL.list.filter((x) => !x.s.seoul);
+  const rows = gu.map((x) => {
+    const code = x.s.code;
+    const lv = L.rows.find((y) => y.r.code === code && !y.isBase);
+    if (!lv) return null; // 기준 구(강남)
+    const p = pctRank(lv.v);
+    return { x, s: x.s, lv, p, score: Math.round((2 * p - 1) * 100), order: gu.filter((y) => y.now > x.now).length + 1 };
+  }).filter(Boolean).sort((a, b) => b.score - a.score);
+  return { rows, PL, L };
+}
+function renderRel() {
+  const el = $('#rel');
+  if (!S.apt || !S.aptRows.length) return;
+  const R = relRows();
+  if (!R) { el.innerHTML = '<p class="note">전고점을 정하지 못해 평가할 수 없어요.</p>'; return; }
+  const { rows, L } = R;
+  const hot = rows[0], cold = rows[rows.length - 1], b = L.base.short;
+  el.innerHTML = `<p class="pk-sum">${b} 대비 가격 수준이 그 구의 지난 기록 속 어디쯤인지로 본 상대 평가예요(평소보다 ${b}에 바짝 붙어 있으면 비싼 쪽). 지금 상대적으로 가장 비싼 쪽: <b class="up">${hot.s.short}</b> · 가장 싼 쪽: <b class="dn">${cold.s.short}</b></p>
+    <div class="tbl-wrap"><table id="relTable"><thead><tr><th>구</th><th>${b} 대비 지금</th><th>지난 기록 중 위치</th><th>역대 범위</th><th>전고점 대비</th><th style="text-align:left">상대 평가</th></tr></thead><tbody>
+    ${rows.map((r) => `<tr data-id="${r.s.id}" class="${S.sel === r.s.id ? 'on' : ''}">
+      <td>${r.s.short}</td>
+      <td class="num">${pct(r.lv.now, 1, false)}</td>
+      <td class="num">${topPct(r.p)}</td>
+      <td class="num">${pct(r.lv.v[r.lv.mn], 0, false)}~${pct(r.lv.v[r.lv.mx], 0, false)}</td>
+      <td class="num"><span class="${ud(r.x.now)}">${pct(r.x.now)}</span></td>
+      <td><div class="tcell">${scoreBar(r.score)}${vTag(r.score)}</div></td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="note">자료: KB부동산(구별 ㎡당 가격은 2013.04부터). 지난 가격 흐름만으로 계산한 참고 점수예요. 투자 권유가 아니에요.</p>`;
+}
+
+// ── 전체 요약: 서울 아파트 한눈에 ─────────────────
+function renderSumApt() {
+  const el = $('#sumApt');
+  if (!S.apt || !S.aptRows.length) return;
+  const seR = S.aptRows.find((r) => r.seoul), se = series(seR.id), T = temps().find((t) => t.s.kind === 'm'), R = relRows();
+  const pk = R && R.PL.list.find((x) => x.s.seoul);
+  const under = R ? R.PL.list.filter((x) => !x.s.seoul && x.now < -0.0005).sort((a, b) => a.now - b.now) : [];
+  el.innerHTML = `<div class="d-head"><h2>서울 아파트 한눈에<span>KB부동산</span></h2></div>
+    <p class="pk-sum">${seR.avg ? `평균 매매가 <b>${man(seR.avg)}</b> · ` : ''}올해 <b class="${ud(T.c.ytd)}">${pct(T.c.ytd)}</b>${pk ? ` · 전고점(${dstr(pk.s.d[pk.pk], true)}) 대비 <b class="${ud(pk.now)}">${pct(pk.now)}</b>` : ''} · 온도 ${vTag(T.score)}</p>
+    ${R ? `<p class="pk-sum">상대적으로 비싼 구: <b>${R.rows.slice(0, 3).map((r) => r.s.short).join('·')}</b> · 싼 구: <b>${R.rows.slice(-3).reverse().map((r) => r.s.short).join('·')}</b>${under.length ? ` · 아직 전고점 아래: ${under.map((x) => `${x.s.short} ${pct(x.now)}`).join(', ')}` : ' · 25개 구 모두 전고점을 넘었어요'}</p>` : ''}
+    <button class="ghost" data-goto="apt">부동산 자세히 →</button> <button class="ghost" data-goto="con">결론 보기 →</button>`;
+}
+
+// ── 결론: 싼 쪽·비싼 쪽 · 내 자산 리밸런싱 · 갈아타기 ──────────
+// 급지는 지금 ㎡당 가격 순: 1위(강남) 기준, 상급지 2~8위 · 중급지 9~16위 · 중하급지 17~25위
+function rangeStats(d, v) {
+  let mn = 0, mx = 0;
+  v.forEach((x, i) => { if (x < v[mn]) mn = i; if (x > v[mx]) mx = i; });
+  const n = v.length, now = v[n - 1], j = idxBefore(d, d[n - 1] - 345);
+  return { d, v, now, mn, mx, p: pctRank(v), d12: j >= 0 ? now - v[j] : null };
+}
+function tierData() {
+  const L = levelRows(null);
+  const gu = L.rows.filter((x) => !x.isBase && !x.r.seoul).sort((a, b) => b.r.sqm - a.r.sqm);
+  const tiers = [['상급지', gu.slice(0, 7)], ['중급지', gu.slice(7, 15)], ['중하급지', gu.slice(15)]].map(([name, rows]) => {
+    const m = new Map();
+    for (const x of rows) x.d.forEach((d, i) => { const a = m.get(d) || [0, 0]; a[0] += x.v[i]; a[1]++; m.set(d, a); });
+    const d = [...m.keys()].filter((k) => m.get(k)[1] === rows.length).sort((a, b) => a - b);
+    return { name, rows, ...rangeStats(d, d.map((k) => m.get(k)[0] / m.get(k)[1])) };
+  });
+  return { base: L.base, tiers };
+}
+function pairData(fromCode, toCode) {
+  const A = kbSeries(S.apt.sqm, fromCode), B = kbSeries(S.apt.sqm, toCode);
+  if (!A || !B || fromCode === toCode) return null;
+  const bm = new Map(B.d.map((d, i) => [d, B.v[i]])), d = [], v = [];
+  A.d.forEach((x, i) => { const b = bm.get(x); if (b) { d.push(x); v.push(A.v[i] / b); } });
+  return v.length < 24 ? null : { ...rangeStats(d, v), a: A.v[A.v.length - 1], b: B.v[B.v.length - 1] };
+}
+// 갈아타기 해석. t.now = 지금 사는 곳 ÷ 갈아탈 곳 가격, t.p = 그 비율이 지난 기록 중 몇 %보다 높은지.
+// t.p가 높을수록 "지금 사는 곳이 평소보다 비싸게 팔리는 때" → 어느 방향이든 갈아타기에 유리하다.
+//   올라갈 때(더 비싼 곳으로): 격차가 좁을수록 기회 · 내려갈 때(더 싼 곳으로): 격차가 넓을수록 기회
+// (2013~ 기록에서 강남 대비 수준이 평소보다 높았던 구는 그 뒤 3년 강남보다 덜 올랐다)
+function moveMsg(t, toName, up = true) {
+  const ch = t.d12, gap = (x) => (up ? pp(Math.abs(x)).replace('+', '') : Math.abs(x).toFixed(2) + '배만큼'); // 내려갈 때는 '몇 배'로
+  const trend = ch == null ? '' : Math.abs(ch) <= 0.01 ? '최근 1년 격차는 비슷해요. ' : (up ? ch > 0 : ch < 0) ? `최근 1년 격차가 ${gap(ch)} 줄었어요. ` : `최근 1년 격차가 ${gap(ch)} 벌어졌어요. `;
+  if (up) {
+    if (t.p >= 0.7) return `${trend}격차가 역대 좁은 쪽이라 ${toName}로 올라가는 부담이 상대적으로 작아요 → <b>지표상 갈아타기에 유리한 구간</b>`;
+    if (t.p <= 0.3) return `${trend}격차가 역대 넓은 쪽이라 ${toName}로 올라가는 부담이 커요 → 올라가기보다는 <b>이쪽을 새로 사기에 상대적으로 싼 구간</b>`;
+  } else {
+    if (t.p >= 0.7) return `${trend}격차가 역대 넓은 쪽이라 ${toName}로 옮기면 남는 돈이 상대적으로 커요 → <b>지표상 갈아타기에 유리한 구간</b>`;
+    if (t.p <= 0.3) return `${trend}격차가 역대 좁은 쪽이라 ${toName}로 옮겨도 남는 돈이 적어요 → 지표상 서두를 이유는 적은 구간`;
+  }
+  return `${trend}격차는 역대 보통 수준이에요 → 지표상 뚜렷한 방향은 없어요`;
+}
+// 결론: 지금 싼 쪽·비싼 쪽 → 가진 자산을 고르면 규칙(상대적으로 비싼 쪽을 줄이고 싼 쪽으로, 현금 제외)대로 리밸런싱 방향 → 갈아타기
+function renderCon() {
+  const el = $('#con');
+  if (S.tab !== 'con' || !S.assets.length) return;
+  const T = temps(), basis = S.krw ? '원화' : '달러';
+  const names = (xs) => xs.map((t) => aName(t.s)).join('·');
+  const groups = [['싸다', (x) => x <= -40], ['약간 싸다', (x) => x > -40 && x <= -15], ['보통', (x) => x > -15 && x < 15], ['약간 비싸다', (x) => x >= 15 && x < 40], ['비싸다', (x) => x >= 40]];
+  const nowList = groups.map(([g, f], gi) => {
+    const xs = T.filter((t) => f(t.score)).sort((a, b) => a.score - b.score);
+    return xs.length ? `<li><b class="${gi < 2 ? 'dn' : gi > 2 ? 'up' : ''}">${g}</b> — ${xs.map((t) => `${aName(t.s)} ${trendHTML(trendOf(t.s), false)}`).join(', ')}</li>` : '';
+  }).join('');
+  // 내 자산
+  const held = new Set(S.hold), order = T.slice().sort((a, b) => (a.s.kind === 'm') - (b.s.kind === 'm') || S.assets.findIndex((x) => x.id === a.s.id) - S.assets.findIndex((x) => x.id === b.s.id));
+  const mine = T.filter((t) => held.has(t.s.id));
+  const sell = mine.filter((t) => t.score >= 15).sort((a, b) => b.score - a.score);
+  const buy = T.filter((t) => t.score <= -15 && !sell.includes(t)).sort((a, b) => a.score - b.score);
+  let advice;
+  if (!mine.length) advice = '가진 자산을 골라 주세요.';
+  else if (sell.length && buy.length) advice = `가진 자산 중 비싼 쪽인 <b class="up">${names(sell)}</b>의 일부를 → 상대적으로 싼 <b class="dn">${names(buy)}</b> 쪽으로 옮기는 리밸런싱이 이 기준에 맞아요.` +
+    (buy.some((t) => held.has(t.s.id)) ? ' (이미 가진 자산은 비중을 늘리는 쪽이에요.)' : '');
+  else if (sell.length) advice = `가진 자산 중 비싼 쪽인 <b class="up">${names(sell)}</b>이 있지만, 지금 뚜렷하게 싼 자산이 없어요 → 옮기기보다 지금 비중을 유지하는 쪽.`;
+  else {
+    const cheap = mine.filter((t) => t.score <= -15);
+    advice = '가진 자산 중 비싼 쪽이 없어요 → 지금 비중을 유지하는 쪽.' + (cheap.length ? ` 그중 <b class="dn">${names(cheap)}</b>은 싼 쪽이라, 새로 넣을 돈이 생기면 이쪽부터.` : '');
+  }
+  // 갈아타기 (부동산)
+  const TD = tierData(), base = TD.base.short;
+  const tierLine = (t) => `<li><b>${t.name}</b> <span class="muted">(${t.rows.map((x) => x.r.short).join('·')})</span>: 지금 ${base} 가격의 <b>${pct(t.now, 1, false)}</b> · 2013년부터 범위 ${pct(t.v[t.mn], 0, false)}~${pct(t.v[t.mx], 0, false)}, 지난 기록 중 ${topPct(t.p)}. ${moveMsg(t, base)}</li>`;
+  // 상급지로: 지금 사는 곳보다 비싼 구만 / 하급지로: 싼 구만 갈아탈 곳에 보여 준다 (지금 ㎡당 가격 순)
+  const guList = S.aptRows.filter((r) => r.sqm && !r.seoul).slice().sort((a, b) => b.sqm - a.sqm), up = S.mvDir !== 'down';
+  const fromList = up ? guList.slice(1) : guList.slice(0, -1);
+  let fromR = fromList.find((r) => r.code === S.mvFrom) || (up ? fromList[fromList.length - 1] : fromList[0]);
+  const toList = guList.filter((r) => (up ? r.sqm > fromR.sqm : r.sqm < fromR.sqm));
+  const toR = toList.find((r) => r.code === S.mvTo) || (up ? toList[toList.length - 1] : toList[0]); // 없으면 바로 위·아래 구
+  S.mvFrom = fromR.code; S.mvTo = toR.code;
+  const guOpts = (list, sel) => list.map((r) => `<option value="${r.code}" ${r.code === sel ? 'selected' : ''}>${r.short} (국평 ${eok(r.sqm * 84)})</option>`).join('');
+  const PD = pairData(fromR.code, toR.code);
+  el.innerHTML = `<div class="d-head"><h2>결론<span>${dstr(Math.floor(Date.now() / DAY))} 기준 · 달러 자산은 ${basis} 기준 · 현금 제외</span></h2></div>
+    <div class="con-box"><h3>지금은 <span class="muted" style="font-weight:400;font-size:13px">상대적인 온도</span></h3><ul class="why">${nowList}</ul>
+      <p class="note">'비싸다'는 평소보다·다른 자산보다 많이 올라 있다는 뜻이지, 떨어진다는 예측이 아니에요. 오르는 흐름이면 비싸도 더 오를 수 있어요.</p></div>
+    ${PUBLIC ? '' : `<div class="con-box"><h3>내 자산으로 보면</h3>
+      <div class="holds">${order.map((t) => `<label><input type="checkbox" data-hold="${t.s.id}" ${held.has(t.s.id) ? 'checked' : ''}> ${aName(t.s)} <span class="${vClass(t.score)}">${verdict(t.score)}</span></label>`).join('')}</div>
+      <p class="pk-sum">${advice}</p>
+    </div>`}
+    <div class="con-box"><h3>부동산 갈아타기</h3>
+      <ul class="why">${TD.tiers.map(tierLine).join('')}</ul>
+      <div class="lv-top" style="margin-top:12px"><span class="seg"><button data-mvdir="up" class="${up ? 'on' : ''}">상급지로 갈아타기</button><button data-mvdir="down" class="${up ? '' : 'on'}">하급지로 갈아타기</button></span></div>
+      <div class="lv-top">지금 사는 곳 <select id="mvFrom">${guOpts(fromList, fromR.code)}</select> → ${up ? '올라갈 곳' : '내려갈 곳'} <select id="mvTo">${guOpts(toList, toR.code)}</select></div>
+      ${PD ? (up
+        ? `<p class="pk-sum"><b>올라가기</b>: ${fromR.short}는 지금 ${toR.short} 가격의 <b>${pct(PD.now, 1, false)}</b> (국평 환산 ${eok(PD.a * 84)} → ${eok(PD.b * 84)}, 차이 약 ${eok((PD.b - PD.a) * 84)}) · 2013년부터 범위 ${pct(PD.v[PD.mn], 1, false)}(${dstr(PD.d[PD.mn], true)})~${pct(PD.v[PD.mx], 1, false)}(${dstr(PD.d[PD.mx], true)}), 지난 기록 중 ${topPct(PD.p)}.<br>${moveMsg(PD, toR.short, true)}</p>`
+        : `<p class="pk-sum"><b>내려가기</b>: ${fromR.short}는 지금 ${toR.short}의 <b>${PD.now.toFixed(2)}배</b> (국평 환산 ${eok(PD.a * 84)} → ${eok(PD.b * 84)}, 남는 돈 약 ${eok((PD.a - PD.b) * 84)}) · 2013년부터 범위 ${PD.v[PD.mn].toFixed(2)}배(${dstr(PD.d[PD.mn], true)})~${PD.v[PD.mx].toFixed(2)}배(${dstr(PD.d[PD.mx], true)}), 지난 기록 중 ${topPct(PD.p)}.<br>${moveMsg(PD, toR.short, false)}</p>`)
+        : '<p class="note">서로 다른 두 구를 골라 주세요.</p>'}
+    </div>
+    <p class="note">지난 가격 흐름을 정해 둔 규칙대로 해석한 참고 자료예요. 세금·거래 비용·개인 상황은 반영하지 않았고, 투자 권유가 아니에요.</p>`;
+}
+
+// ── 구별 가격 수준(가장 비싼 구 = 100%) ──
+function kbSeries(t, code) {
+  const r = t && t.rows.find((x) => x.code === code);
+  if (!r) return null;
+  const d = [], v = [];
+  r.v.forEach((x, i) => { if (x != null) { d.push(ym(t.dates[i])); v.push(x); } });
+  return { d, v };
+}
+function levelRows(baseCode = S.lvBase) {
+  const A = S.apt, list = S.aptRows.filter((r) => r.sqm);
+  const top = list.filter((r) => !r.seoul).sort((a, b) => b.sqm - a.sqm)[0];
+  const base = list.find((r) => r.code === baseCode) || top;
+  const b = kbSeries(A.sqm, base.code), bm = new Map(b.d.map((d, i) => [d, b.v[i]]));
+  const make = (r) => {
+    const s = kbSeries(A.sqm, r.code); if (!s) return null;
+    const d = [], v = [];
+    s.d.forEach((x, i) => { const bv = bm.get(x); if (bv) { d.push(x); v.push(s.v[i] / bv); } });
+    return { d, v };
+  };
+  const rows = list.map((r) => {
+    const raw = make(r);
+    if (!raw || raw.v.length < 12) return null;
+    const w = win(raw); // 최근 20년 (구별 ㎡당은 2013.04부터라 그대로)
+    let mn = 0, mx = 0;
+    w.v.forEach((x, i) => { if (x < w.v[mn]) mn = i; if (x > w.v[mx]) mx = i; });
+    const now = w.v[w.v.length - 1];
+    return { r, d: w.d, v: w.v, now, mn, mx, pos: w.v[mx] - w.v[mn] > 1e-9 ? (now - w.v[mn]) / (w.v[mx] - w.v[mn]) : null, isBase: r.code === base.code };
+  }).filter(Boolean).sort((a, b) => b.r.sqm - a.r.sqm);
+  return { rows, base, top };
+}
+const pp = (x) => `${x >= 0 ? '+' : MINUS}${Math.abs(x * 100).toFixed(1)}%p`;
+const sgn = (x) => `${x > 0 ? '+' : x < 0 ? MINUS : ''}${Math.abs(x)}`;
+function renderLevels() {
+  const el = $('#lv');
+  if (!S.apt || !S.aptRows.length) return;
+  const { rows, base } = levelRows();
+  const others = rows.filter((x) => !x.isBase), gu = others.filter((x) => !x.r.seoul);
+  const sel = others.find((x) => x.r.code === S.lvSel) || others.find((x) => x.r.code === '1162000000') || others[others.length - 1];
+  const lo = Math.min(...others.map((x) => x.v[x.mn])), hi = Math.max(...others.map((x) => x.v[x.mx]), 1);
+  const dmin = Math.max(0, lo - (hi - lo) * 0.06), dmax = hi + (hi - lo) * 0.06;
+  const pos = (x) => ((x - dmin) / (dmax - dmin)) * 100;
+  const ticks = niceTicks(dmin, dmax, 6).filter((t) => t > dmin && t < dmax);
+  const seRow = others.find((x) => x.r.seoul);
+  // 서울 평균이 지금 몇 %인지 모든 줄에 주황 선으로
+  const grid = ticks.map((t) => `<i class="g" style="left:${pos(t).toFixed(2)}%"></i>`).join('') + (seRow ? `<i class="mean" style="left:${pos(seRow.now).toFixed(2)}%" title="서울 평균 ${pct(seRow.now, 1, false)}"></i>` : '');
+  const P = (x) => pct(x, 1, false);
+  const modeYear = (k) => {
+    const c = {};
+    for (const x of gu) { const y = new Date(x.d[x[k]] * DAY).getUTCFullYear(); c[y] = (c[y] || 0) + 1; }
+    const [y, n] = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
+    return `<b>${y}년</b>(${n}곳)`;
+  };
+  const start = dstr(Math.min(...gu.map((x) => x.d[0])), true);
+  let sum;
+  {
+    const low = gu.filter((x) => x.pos != null && x.pos <= 0.1);
+    sum = `${base.short} ㎡당 ${nf(Math.round(base.sqm))}만 원(국평 환산 ${eok(base.sqm * 84)}) = 100%로 놓고 구마다 ${base.short} 가격의 몇 % 수준인지 봐요 (예: 강남 10억일 때 5억이면 50%).` +
+      (seRow ? ` 서울 평균은 지금 <b>${P(seRow.now)}</b>(국평 환산 ${eok(seRow.r.sqm * 84)}, 역대 ${P(seRow.v[seRow.mn])}~${P(seRow.v[seRow.mx])}) — 주황 선.` : '') + `<br>` +
+      `${base.short}와 차이가 가장 작았던(%가 가장 높았던) 때는 대부분 ${modeYear('mx')}, 가장 컸던 때는 대부분 ${modeYear('mn')}. ` +
+      `지금 역대 가장 낮은 쪽(범위 아래 10% 안)에 있는 구 <b>${low.length}곳</b>${low.length ? `: ${low.map((x) => x.r.short).join(', ')}` : ''}.`;
+  }
+  const baseSel = `<label>기준 <select id="lvBase">${S.aptRows.filter((r) => r.sqm).slice().sort((a, b) => b.sqm - a.sqm).map((r) => `<option value="${r.code}" ${r.code === base.code ? 'selected' : ''}>${r.seoul ? '서울 평균' : r.short}</option>`).join('')}</select></label>`;
+  const row = (x) => {
+    const r = x.r;
+    const name = `<span class="lv-name" title="㎡당 ${nf(Math.round(r.sqm))}만 원">${r.seoul ? '서울 평균' : r.short}<small>국평 ${eok(r.sqm * 84)}</small></span>`;
+    if (x.isBase) return `<div class="pk-row seoul" style="cursor:default">${name}<div class="pk-bar">${grid}<i class="z" style="left:${pos(1).toFixed(2)}%"></i><i class="cur" style="left:${pos(1).toFixed(2)}%;background:var(--price)"></i></div><span class="pk-txt"><b>100%</b> · 기준</span></div>`;
+    const where = x.pos == null ? '' : ` · 범위 아래에서 ${Math.round(x.pos * 100)}% 지점`;
+    return `<div class="pk-row lv-row${r.seoul ? ' seoul' : ''}${sel === x ? ' on' : ''}" data-lv="${r.code}" title="${r.seoul ? '서울 평균' : r.short}: 지금 ${P(x.now)}, 역대 ${P(x.v[x.mn])}~${P(x.v[x.mx])}${where}">
+      ${name}
+      <div class="pk-bar">${grid}
+        <i class="band" style="left:${pos(x.v[x.mn]).toFixed(2)}%;width:${(pos(x.v[x.mx]) - pos(x.v[x.mn])).toFixed(2)}%"></i>
+        <i class="tk" style="left:${pos(x.v[x.mn]).toFixed(2)}%"></i><i class="tk" style="left:${pos(x.v[x.mx]).toFixed(2)}%"></i>
+        <i class="z" style="left:${pos(1).toFixed(2)}%"></i>
+        <i class="cur" style="left:${pos(x.now).toFixed(2)}%;background:var(--price)"></i>
+      </div>
+      <span class="pk-txt"><b>${P(x.now)}</b> · 최저 ${P(x.v[x.mn])} (${dstr(x.d[x.mn], true)}) · 최고 ${P(x.v[x.mx])} (${dstr(x.d[x.mx], true)})</span>
+    </div>`;
+  };
+  const what = `${base.short} 대비 가격 수준`;
+  el.innerHTML = `<div class="lv-top">${baseSel}</div>
+    <p class="pk-sum">${sum}</p>
+    <div class="ch-title">${sel.r.seoul ? '서울 평균' : sel.r.short} — ${what} 흐름 <span class="muted" style="font-weight:400">지금 ${P(sel.now)} · 역대 ${P(sel.v[sel.mn])}~${P(sel.v[sel.mx])}${sel.pos == null ? '' : ` 중 아래에서 ${Math.round(sel.pos * 100)}% 지점`} · 아래 줄을 누르면 바뀌어요</span></div>
+    <div class="chart" id="lvChart"></div>
+    <div class="pk-axis" style="margin-top:10px"><span>가격순</span><div class="pk-bar">${ticks.map((t) => `<span style="left:${pos(t).toFixed(2)}%">${pct(t, 0, false)}</span>`).join('')}</div><span>지금 · 역대 최저 · 역대 최고</span></div>
+    ${rows.map(row).join('')}
+    <p class="note">회색 막대 = 역대 최저~최고 범위 · 점 = 지금 · 세로선 = ${base.short}(100%) · 주황 선 = 서울 평균의 지금 수준 · 국평 = ㎡당 평균가 × 전용 84㎡로 환산한 값(KB는 구별 평균 매매가를 따로 내지 않아요. 서울 평균 매매가는 ㎡당 × 83㎡와 거의 같아요) · 구별 ㎡당 평균 매매가는 KB가 ${start}부터 내서 그때부터 비교해요.
+    최저 = ${base.short}와 가격 차이가 가장 컸을 때, 최고 = 가장 작았을 때.</p>`;
+  drawLevelChart($('#lvChart'), sel);
+}
+function drawLevelChart(el, row) {
+  const W = el.clientWidth || 900, Hh = 190, T = 16, B = 24, L = 58, R = 120;
+  const d = row.d, v = row.v, n = v.length, D0 = d[0], D1 = d[n - 1];
+  const X = (day) => L + ((day - D0) / Math.max(1, D1 - D0)) * (W - L - R);
+  let lo = v[row.mn], hi = v[row.mx];
+  const pad = (hi - lo) * 0.15 || 0.02; lo -= pad; hi += pad;
+  const Y = (x) => T + ((hi - x) / (hi - lo)) * (Hh - T - B);
+  let path = '';
+  v.forEach((x, i) => { path += (i ? 'L' : 'M') + X(d[i]).toFixed(1) + ' ' + Y(x).toFixed(1); });
+  const mark = (i, label, below) => {
+    if (i === n - 1) return '';
+    const x = X(d[i]), anchor = x > W - R - 110 ? 'end' : x < L + 90 ? 'start' : 'middle';
+    return `<circle cx="${x}" cy="${Y(v[i])}" r="3.5" fill="var(--price)"/><text class="lbl" x="${x}" y="${Y(v[i]) + (below ? 17 : -9)}" text-anchor="${anchor}">${label}</text>`;
+  };
+  const endTxt = pct(v[n - 1], 1, false) + (row.mn === n - 1 ? ' 역대 최저' : row.mx === n - 1 ? ' 역대 최고' : '');
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" height="${Hh}" role="img" aria-label="${row.r.short} 흐름">
+    ${niceTicks(lo, hi, 4).map((t) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${L - 8}" y="${Y(t) + 4}" text-anchor="end">${pct(t, 0, false)}</text>`).join('')}
+    ${xTicks(D0, D1, W - L - R).map(([day, t]) => `<text x="${X(day)}" y="${Hh - 6}" text-anchor="middle">${t}</text>`).join('')}
+    <line class="base" x1="${L}" x2="${W - R}" y1="${Hh - B}" y2="${Hh - B}"/>
+    <path d="${path}" fill="none" stroke="var(--price)" stroke-width="2" stroke-linejoin="round"/>
+    ${mark(row.mx, `최고 ${pct(v[row.mx], 1, false)} (${dstr(d[row.mx], true)})`, false)}
+    ${mark(row.mn, `최저 ${pct(v[row.mn], 1, false)} (${dstr(d[row.mn], true)})`, true)}
+    <circle cx="${X(D1)}" cy="${Y(v[n - 1])}" r="4" fill="var(--price)" stroke="var(--panel)" stroke-width="2"/>
+    <text class="lbl" x="${X(D1) + 8}" y="${Y(v[n - 1]) + 4}">${endTxt}</text>
+    <line class="xh" id="xhL" y1="${T}" y2="${Hh - B}" hidden/><circle id="dotL" r="4" fill="var(--price)" stroke="var(--panel)" stroke-width="2" hidden/>
+    <rect class="hit" x="${L}" y="0" width="${W - L - R}" height="${Hh}" fill="transparent"/></svg>`;
+  const svg = el.querySelector('svg'), hit = svg.querySelector('.hit');
+  hit.addEventListener('mousemove', (e) => {
+    const rc = svg.getBoundingClientRect(), x = ((e.clientX - rc.left) / rc.width) * W;
+    const day = D0 + ((x - L) / (W - L - R)) * (D1 - D0);
+    let i = Math.max(0, idxBefore(d, day + 0.5));
+    if (i + 1 < n && Math.abs(d[i + 1] - day) < Math.abs(d[i] - day)) i++;
+    const xh = svg.querySelector('#xhL'), dot = svg.querySelector('#dotL');
+    xh.removeAttribute('hidden'); dot.removeAttribute('hidden');
+    xh.setAttribute('x1', X(d[i])); xh.setAttribute('x2', X(d[i])); dot.setAttribute('cx', X(d[i])); dot.setAttribute('cy', Y(v[i]));
+    showTip(e, `<b>${dstr(d[i], true)}</b><br>${pct(v[i], 1, false)}`);
+  });
+  hit.addEventListener('mouseleave', () => { svg.querySelector('#xhL').setAttribute('hidden', ''); svg.querySelector('#dotL').setAttribute('hidden', ''); $('#tip').hidden = true; });
+}
+
+// ── 머리·바닥 ─────────────────────────────────
+function renderStatus() {
+  const st = $('#status');
+  if (!S.live) return;
+  const t = new Date(S.live.at);
+  const bad = S.liveErr || Object.keys(S.live.errors || {}).length;
+  st.className = bad ? 'bad' : 'ok';
+  st.innerHTML = PUBLIC
+    ? `<span class="dot"></span>${t.toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })} 기준 시세 · 한 시간마다 갱신`
+    : `<span class="dot"></span>${bad ? '일부 시세를 못 받았어요 · ' : ''}${t.toLocaleTimeString('ko-KR')} 시세 · 15초마다`;
+  const fx = S.live.q.FX;
+  $('#fx').innerHTML = fx ? `원/달러 <b class="num">${nf(fx.p, 1)}</b> ${chg(fx.p / fx.prev - 1)}` : '';
+}
+function renderFoot(h) {
+  const errs = Object.entries((h && h.errors) || {}).map(([k, v]) => `${k}: ${v}`);
+  $('#foot').innerHTML = `
+    <b>기간</b> · 주식·금·비트코인·환율의 수익률·낙폭·하락 구간은 <b>최근 20년</b>만으로 계산해요(닷컴 버블 2000~2002 같은 옛 구간은 빠져요). 기록이 20년이 안 되는 SCHD·비트코인은 처음부터. 아파트도 최근 20년(1986년부터의 최대 낙폭은 서울 아파트 자세히에 따로).<br>
+    <b>숫자 기준</b> · 주식·ETF는 배당을 다시 투자한 수정 종가(야후 파이낸스) · 코스피는 배당 없는 지수 · 금(GLD)·비트코인은 달러 가격 · <b>원화 기준</b>은 그날 값 × 그날 원/달러 환율(지금 값은 지금 환율) · 아파트는 KB부동산 매매가격지수(가격만, 임대 수익·세금·비용 제외)<br>
+    <b>시세</b> · 미국 ETF는 미국 장중(한국 밤 10:30~새벽 5:00, 서머타임 끝나면 11:30~6:00)에 움직이고 · 코스피는 네이버 증권 · 비트코인은 24시간(달러는 야후, 원화는 업비트) · ${PUBLIC ? '한 시간마다 자동으로 새로 받아요' : '화면은 15초마다 새로 받아요'}<br>
+    <b>연평균 수익률</b> = 처음 값에서 지금 값까지 해마다 같은 비율로 불었다고 볼 때의 비율(복리) · <b>최대 낙폭(MDD)</b> = 그때까지의 최고가에서 가장 많이 빠졌던 비율(역대급 하락) · <b>연중 최대 하락</b> = 해마다 그 해 안에서 고점 → 저점으로 가장 많이 빠진 폭, 그 가운데 값이 '평범한 해의 하락' · <b>고점 대비</b> = 지금까지의 최고가보다 지금 얼마나 낮은지<br>
+    일별 기록 ${h ? h.fetched : ''} 받음${PUBLIC ? '' : ' · 기록은 하루 한 번 새로 받아 자산모니터 폴더의 기록에 둬요'}. 자료: 야후 파이낸스·네이버 증권·업비트·KB부동산. 지난 수익률은 앞으로의 수익을 뜻하지 않아요. <b>싸다·비싸다는 지난 가격 흐름으로 본 상대적인 온도이고, 투자 권유가 아니에요. 투자 판단과 책임은 본인에게 있어요.</b>
+    ${errs.length ? `<div class="err">받지 못한 기록(지난 기록으로 보여요): ${errs.join(' · ')}</div>` : ''}`;
+}
+
+// ── 불러오기 ─────────────────────────────────
+const PUBLIC_DATA = { '/api/history': 'data/history.json', '/api/apt': 'data/apt.json', '/api/live': 'data/live.json' };
+async function getJSON(u) {
+  if (PUBLIC) u = PUBLIC_DATA[u.split('?')[0]] + '?t=' + Math.floor(Date.now() / 300000); // 공개판: 같은 폴더의 자료 파일 (5분 단위로 새로)
+  const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status); return r.json(); }
+let HIST = null;
+async function loadHistory(force) {
+  HIST = await getJSON('/api/history' + (force ? '?force=1' : ''));
+  S.assets = HIST.assets.filter((a) => a.d && a.d.length).map((a) => ({ ...a, kind: 'd' }));
+  renderFoot(HIST);
+}
+async function loadApt(force) {
+  try {
+    S.apt = await getJSON('/api/apt' + (force ? '?force=1' : ''));
+    S.aptRows = buildApt(S.apt);
+    if (S.apt.error) $('#aptSub').textContent = 'KB 자료를 새로 받지 못해 지난 기록으로 보여요';
+  } catch (e) {
+    $('#aptNote').innerHTML = `<span class="err">KB부동산 자료를 받지 못했어요 (${e.message}). 잠시 뒤 [기록 다시 받기]를 눌러 주세요.</span>`;
+  }
+}
+async function pollLive() {
+  try { S.live = await getJSON('/api/live'); S.liveErr = false; }
+  catch (e) { S.liveErr = true; if (!S.live) { $('#status').className = 'bad'; $('#status').innerHTML = '<span class="dot"></span>시세 서버에 닿지 않아요 · 바탕화면 아이콘을 다시 눌러 주세요'; } return; }
+  renderStatus();
+  if (!S.assets.length) return;
+  renderCards();
+  renderTemp();
+  // 보고 있는 종목 값(원화 기준이면 환율도)이 바뀌었고, 차트 위에 마우스를 올려 둔 게 아니면 자세히도 다시 그린다
+  const L = S.live.q[S.sel], FX = S.live.q.FX;
+  const key = (L ? L.p : '') + '|' + (FX ? FX.p : '');
+  if (L && key !== S.shownKey && $('#tip').hidden) { S.shownKey = key; renderDetail(); }
+}
+function renderBasis() { document.querySelectorAll('#basis button').forEach((b) => b.classList.toggle('on', (b.dataset.krw === '1') === S.krw)); }
+function renderAll() { renderBasis(); renderCards(); renderTemp(); renderSumApt(); renderCorr(); renderDetail(); renderApt(); renderRel(); renderPeaks(); renderLevels(); renderCon(); }
+function setTab(t, keepScroll) {
+  S.tab = t;
+  S.sel = t === 'apt' ? S.selApt : S.selFin;
+  remember();
+  document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+  document.querySelectorAll('.pane').forEach((p) => p.classList.toggle('on', p.dataset.pane === t));
+  if (t === 'fin') $('#hostFin').appendChild($('#detail'));
+  if (t === 'apt') $('#hostApt').appendChild($('#detail'));
+  renderAll();
+  if (!keepScroll) scrollTo(0, 0);
+}
+
+document.addEventListener('click', (e) => {
+  const md = e.target.closest('[data-mvdir]');
+  if (md) { S.mvDir = md.dataset.mvdir; remember(); renderCon(); return; }
+  const tb = e.target.closest('#tabs button, [data-goto]');
+  if (tb) { setTab(tb.dataset.tab || tb.dataset.goto); return; }
+  const card = e.target.closest('.card');
+  if (card) {
+    pick(card.dataset.id);
+    if (S.tab === 'fin' && !card.dataset.id.startsWith('APT')) { remember(); renderAll(); return; }
+    setTab(card.dataset.id.startsWith('APT') ? 'apt' : 'fin');
+    return;
+  }
+  const bs = e.target.closest('#basis button');
+  if (bs) { S.krw = bs.dataset.krw === '1'; remember(); renderAll(); return; }
+  const cc = e.target.closest('[data-corr]');
+  if (cc) { S.corrSel = cc.dataset.corr; renderCorr(); return; }
+  const lr = e.target.closest('.lv-row');
+  if (lr) { S.lvSel = lr.dataset.lv; remember(); renderLevels(); return; }
+  const pr = e.target.closest('.pk-row[data-id]');
+  if (pr) { pick(pr.dataset.id); remember(); renderAll(); $('#detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  const chip = e.target.closest('[data-period]');
+  if (chip) { S.period = chip.dataset.period; remember(); renderDetail(); return; }
+  const th = e.target.closest('#aptTable th');
+  if (th) { const k = th.dataset.k; S.sort = S.sort.key === k ? { key: k, dir: -S.sort.dir } : { key: k, dir: k === 'short' || k === 'mdd' || k === 'cur' ? 1 : -1 }; remember(); renderApt(); return; }
+  const tr = e.target.closest('#aptTable tbody tr, #tempTable tbody tr, #relTable tbody tr');
+  if (tr) {
+    pick(tr.dataset.id);
+    const want = tr.dataset.id.startsWith('APT') ? 'apt' : 'fin';
+    if (S.tab !== want) { setTab(want); return; }
+    remember(); renderAll(); $('#detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'logBox') { S.log = e.target.checked; remember(); renderDetail(); }
+  if (e.target.id === 'lvBase') { S.lvBase = e.target.value; remember(); renderLevels(); }
+  if (e.target.id === 'mvFrom' || e.target.id === 'mvTo') { S[e.target.id] = e.target.value; remember(); renderCon(); }
+  if (e.target.dataset && e.target.dataset.hold) { const id = e.target.dataset.hold; S.hold = e.target.checked ? [...new Set([...S.hold, id])] : S.hold.filter((x) => x !== id); remember(); renderCon(); }
+});
+if (PUBLIC) $('#reload').hidden = true;
+$('#reload').addEventListener('click', async () => {
+  const b = $('#reload'); b.disabled = true; b.textContent = '받는 중…';
+  try { await Promise.all([loadHistory(true), loadApt(true)]); renderAll(); } catch (e) { alert('다시 받지 못했어요: ' + e.message); }
+  b.disabled = false; b.textContent = '기록 다시 받기';
+});
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(renderDetail, 150); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pollLive(); });
+
+(async () => {
+  pollLive();
+  try { await loadHistory(); } catch (e) { $('#cards').innerHTML = `<div class="loading err">시세 기록을 받지 못했어요 (${e.message}). 인터넷 연결을 확인하고 [기록 다시 받기]를 눌러 주세요.</div>`; }
+  await loadApt();
+  if (!series(S.selFin)) S.selFin = 'VOO';
+  if (!series(S.selApt)) S.selApt = 'APT1100000000';
+  setTab(S.tab, true);
+  setInterval(pollLive, PUBLIC ? 300000 : 15000);
+})();
+</script>
+</body>
+</html>
