@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>자산 모니터 · 자산 온도</title>
 <meta name="description" content="VOO·SCHD·QQQ·금·비트코인·코스피·서울 아파트의 역사적 수익률, 최대 낙폭, 지금 하락 위치와 상대적인 자산 온도">
+<link rel="canonical" href="https://pyeongon-invest.github.io/asset-monitor1/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pyeongon-invest.github.io/asset-monitor1/">
+<meta property="og:title" content="자산 모니터 · 자산 온도">
+<meta property="og:description" content="VOO·SCHD·QQQ·금·비트코인·코스피·서울 아파트의 역사적 수익률, 최대 낙폭, 지금 하락 위치와 상대적인 자산 온도">
+<meta property="og:image" content="https://pyeongon-invest.github.io/asset-monitor1/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317365E'/%3E%3Crect x='11' y='34' width='9' height='18' rx='2' fill='%238ab8f5'/%3E%3Crect x='23' y='27' width='9' height='25' rx='2' fill='%23c3c2b7'/%3E%3Crect x='35' y='20' width='9' height='32' rx='2' fill='%23ee9a74'/%3E%3Crect x='47' y='12' width='9' height='40' rx='2' fill='%23e66767'/%3E%3C/svg%3E">
 <style>
 :root{
   color-scheme:light;
@@ -215,10 +226,43 @@ footer{margin-top:22px;font-size:12.5px;color:var(--muted);line-height:1.7}
 .loading{padding:30px;text-align:center;color:var(--muted)}
 .err{color:#d03b3b;font-size:13px}
 @media (max-width:1100px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* 구 표가 옆으로 밀리지 않게: 좁은 화면에서는 ㎡당·3.3㎡당·10년 칸을 뺀다 (국평 환산이 남음) */
+@media (max-width:960px){
+  #aptTable th:nth-child(2),#aptTable td:nth-child(2),#aptTable th:nth-child(3),#aptTable td:nth-child(3),
+  #aptTable th:nth-child(9),#aptTable td:nth-child(9),#aptTable .mini{display:none}
+}
 @media (max-width:640px){
   main{padding:12px 16px 30px} header{padding:10px 16px;position:static}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .kpi .v{font-size:19px}
+  .panel{padding:14px 12px}
+  table{font-size:12.5px}
+  th,td{padding:6px 4px}
+  .d-head h2 span{display:block;margin:2px 0 0}
+  /* 휴대폰: 자산 온도·구별 상대 평가 표는 줄마다 카드로 — 이름과 온도를 첫 줄에, 나머지는 이름표를 달아 아래로 */
+  #tempTable,#tempTable tbody,#relTable,#relTable tbody{display:block;width:100%}
+  #tempTable thead,#relTable thead{display:none}
+  #tempTable tr,#relTable tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 12px;padding:11px 4px;border-bottom:1px solid var(--line)}
+  #tempTable tr.on,#relTable tr.on{background:var(--brand-w)}
+  #tempTable td,#relTable td{display:block;border:0;padding:0;text-align:left;white-space:normal;width:auto;background:none!important}
+  #tempTable td:first-child,#relTable td:first-child{font-weight:700;font-size:15.5px;align-self:center}
+  #tempTable td:last-child,#relTable td:last-child{grid-column:2;grid-row:1;justify-self:end;width:auto;white-space:normal}
+  .tcell{grid-template-columns:56px auto}
+  .tcell .tbar{width:56px}
+  #tempTable td[data-l]::before,#relTable td[data-l]::before{content:attr(data-l);display:block;font-size:11.5px;color:var(--muted);font-weight:400}
+  #tempTable td.wide{grid-column:1 / -1}
+  #tempTable td:not(:last-child) small,#relTable td:not(:last-child) small{display:inline;margin-left:4px}
+  /* 구 표: 휴대폰에서는 국평·올해·1년·고점 대비만 */
+  #aptTable th:nth-child(2),#aptTable td:nth-child(2),#aptTable th:nth-child(3),#aptTable td:nth-child(3),
+  #aptTable th:nth-child(5),#aptTable td:nth-child(5),#aptTable th:nth-child(8),#aptTable td:nth-child(8),
+  #aptTable th:nth-child(9),#aptTable td:nth-child(9),#aptTable th:nth-child(10),#aptTable td:nth-child(10),#aptTable .mini{display:none}
+  #tempTable td:nth-child(2)::before{display:inline;margin-right:6px}
+  /* 큰 하락 구간: '다시 고점' 칸은 빼고 기간 글자는 줄바꿈 */
+  .eps th,.eps td{white-space:normal}
+  .eps th:nth-child(6),.eps td:nth-child(6){display:none}
+  .cm-wrap{grid-template-columns:minmax(0,1fr)}
+  .cm td{min-width:34px;height:30px;font-size:11.5px;white-space:normal;line-height:1.15}
+  .cm th{padding:2px 3px;font-size:11px;white-space:normal}
 }
 </style>
 </head>
@@ -645,7 +689,7 @@ function epsTable(s, c) {
   const cur = c.eps.find((e) => e.r === -1);
   if (cur && !list.includes(cur)) list.push(cur);
   if (!list.length) return '<p class="note">이 기간에는 큰 하락이 없었어요.</p>';
-  return `<table><thead><tr><th>고점</th><th>저점</th><th>하락폭</th><th>떨어진 기간</th><th>회복까지</th><th>다시 고점</th></tr></thead><tbody>${list.map((e) => `
+  return `<table class="eps"><thead><tr><th>고점</th><th>저점</th><th>하락폭</th><th>떨어진 기간</th><th>회복까지</th><th>다시 고점</th></tr></thead><tbody>${list.map((e) => `
     <tr><td>${dstr(s.d[e.p], mo)}</td><td>${dstr(s.d[e.t], mo)}</td><td class="dn num">${pct(e.depth)}</td><td>${dur(s.d[e.t] - s.d[e.p])}</td>
     <td>${e.r >= 0 ? dur(s.d[e.r] - s.d[e.t]) : '<b>진행 중</b>'}</td><td>${e.r >= 0 ? dstr(s.d[e.r], mo) : `지금 ${pct(c.cur)}`}</td></tr>`).join('')}</tbody></table>`;
 }
@@ -1056,10 +1100,10 @@ function renderTemp() {
     <div class="tbl-wrap"><table id="tempTable"><thead><tr><th>자산</th><th>지금 흐름</th><th>최근 수익률(연)</th><th>고점 대비</th><th>평범한 하락의 몇 배</th><th style="text-align:left">온도</th></tr></thead><tbody>
     ${T.map((t) => { const c = t.c, mo = t.s.kind === 'm', a = alt.get(t.s.id); return `<tr data-id="${t.s.id}" class="${S.sel === t.s.id ? 'on' : ''}">
       <td>${aName(t.s)}${t.s.cur === 'KRW' ? ' <small class="muted">원화</small>' : ''}</td>
-      <td>${trendHTML(trendOf(t.s))}</td>
-      <td class="num">${[['1년', c.c1], ['3년', c.c3], ['5년', c.c5]].filter(([, r]) => r != null).map(([k, r]) => `${k} <span class="${r > c.cagr ? 'up' : 'dn'}">${pct(r)}</span>`).join(' · ')} <small class="muted">장기 평균 ${pct(c.cagr)}</small></td>
-      <td class="num"><span class="${c.cur < -0.0005 ? 'dn' : 'up'}">${peakTxt(c.cur)}</span> <small class="muted">최대 낙폭 ${pct(c.mdd, 0)}</small>${mo && t.pk ? `<small class="muted">전고점(${dstr(t.pk.day, true)}) 대비 ${pct(t.pk.now)}${t.pk.now >= 0 ? ' 넘음' : ''}</small>` : ''}</td>
-      <td class="num">${c.iddMed < 0 ? (c.cur / c.iddMed).toFixed(1) + '배' : '–'} <small class="muted">보통 ${pct(c.iddMed, 1)}</small></td>
+      <td data-l="지금 흐름">${trendHTML(trendOf(t.s))}</td>
+      <td class="num wide" data-l="최근 수익률(연)">${[['1년', c.c1], ['3년', c.c3], ['5년', c.c5]].filter(([, r]) => r != null).map(([k, r]) => `${k} <span class="${r > c.cagr ? 'up' : 'dn'}">${pct(r)}</span>`).join(' · ')} <small class="muted">장기 평균 ${pct(c.cagr)}</small></td>
+      <td class="num" data-l="고점 대비"><span class="${c.cur < -0.0005 ? 'dn' : 'up'}">${peakTxt(c.cur)}</span> <small class="muted">최대 낙폭 ${pct(c.mdd, 0)}</small>${mo && t.pk ? `<small class="muted">전고점(${dstr(t.pk.day, true)}) 대비 ${pct(t.pk.now)}${t.pk.now >= 0 ? ' 넘음' : ''}</small>` : ''}</td>
+      <td class="num" data-l="평범한 하락의 몇 배">${c.iddMed < 0 ? (c.cur / c.iddMed).toFixed(1) + '배' : '–'} <small class="muted">보통 ${pct(c.iddMed, 1)}</small></td>
       <td><div class="tcell">${scoreBar(t.score)}${vTag(t.score)}${a && t.s.cur !== a.s.cur ? `<small>${altLbl} 기준 ${verdict(a.score)}</small>` : ''}</div></td></tr>`; }).join('')}
     </tbody></table></div>
     <div class="con-box"><h3>온도를 이렇게 계산한 이유</h3><ul class="why">
@@ -1230,10 +1274,10 @@ function renderRel() {
     <div class="tbl-wrap"><table id="relTable"><thead><tr><th>구</th><th>${b} 대비 지금</th><th>지난 기록 중 위치</th><th>역대 범위</th><th>전고점 대비</th><th style="text-align:left">상대 평가</th></tr></thead><tbody>
     ${rows.map((r) => `<tr data-id="${r.s.id}" class="${S.sel === r.s.id ? 'on' : ''}">
       <td>${r.s.short}</td>
-      <td class="num">${pct(r.lv.now, 1, false)}</td>
-      <td class="num">${topPct(r.p)}</td>
-      <td class="num">${pct(r.lv.v[r.lv.mn], 0, false)}~${pct(r.lv.v[r.lv.mx], 0, false)}</td>
-      <td class="num"><span class="${ud(r.x.now)}">${pct(r.x.now)}</span></td>
+      <td class="num" data-l="${b} 대비 지금">${pct(r.lv.now, 1, false)}</td>
+      <td class="num" data-l="지난 기록 중 위치">${topPct(r.p)}</td>
+      <td class="num" data-l="역대 범위">${pct(r.lv.v[r.lv.mn], 0, false)}~${pct(r.lv.v[r.lv.mx], 0, false)}</td>
+      <td class="num" data-l="전고점 대비"><span class="${ud(r.x.now)}">${pct(r.x.now)}</span></td>
       <td><div class="tcell">${scoreBar(r.score)}${vTag(r.score)}</div></td></tr>`).join('')}
     </tbody></table></div>
     <p class="note">자료: KB부동산(구별 ㎡당 가격은 2013.04부터). 지난 가격 흐름만으로 계산한 참고 점수예요. 투자 권유가 아니에요.</p>`;
