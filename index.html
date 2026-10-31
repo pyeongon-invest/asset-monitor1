@@ -197,6 +197,10 @@ th:first-child,td:first-child{text-align:left}
 .tbar i{position:absolute;top:0;bottom:0;border-radius:4px}
 #tempTable tbody tr,#relTable tbody tr,.mv-tbl tbody tr{cursor:pointer}
 .mv-tbl tbody tr:hover td{background:var(--line2)}
+.mv-pick{margin-top:12px;font-size:14.5px;gap:10px 14px}
+.mv-pick select{font-size:14.5px;font-weight:700;padding:6px 10px;border:1px solid var(--brand);border-radius:8px;background:var(--panel)}
+.mv-budget{display:inline-flex;align-items:center;gap:6px;color:var(--sub)}
+.mv-budget input{width:96px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--panel);font-size:14px}
 .mv-tbl tr.on td{background:var(--brand-w)}
 .mv-tbl th,.mv-tbl td{white-space:normal}
 .mv-tbl td small{display:block}
@@ -1448,8 +1452,7 @@ function moveAdvice(fromR, toR, toList, up) {
   const chTxt = (ch) => (ch == null ? '–' : Math.abs(ch) <= 0.01 ? '비슷' : up ? `${ch > 0 ? '좁아짐' : '벌어짐'} ${pp(Math.abs(ch)).replace('+', '')}` : `${ch > 0 ? '벌어짐' : '좁아짐'} ${Math.abs(ch).toFixed(2)}배`);
   const lvTxt = (P) => (up ? `${pct(P.now, 1, false)} <small class="muted">${pct(P.v[P.mn], 0, false)}~${pct(P.v[P.mx], 0, false)}</small>` : `${P.now.toFixed(2)}배 <small class="muted">${P.v[P.mn].toFixed(2)}~${P.v[P.mx].toFixed(2)}배</small>`);
   const lvHead = up ? `${fromR.short} = 그곳의 몇 %` : `${fromR.short} = 그곳의 몇 배`;
-  return `<h3 class="sec" style="margin-top:20px">${fromR.short}에서 ${up ? '올라갈' : '옮겨 갈'} 곳 한눈에</h3>
-    ${up ? `<div class="lv-top">더 낼 수 있는 돈 <input id="mvBudget" type="number" min="0" step="0.5" value="${S.mvBudget > 0 ? S.mvBudget : ''}" placeholder="제한 없음" style="width:110px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--panel)"> 억 <span class="muted">국평(84㎡) 환산 가격 차이로 걸러요</span></div>` : ''}
+  return `<h3 class="sec" style="margin-top:14px">${fromR.short}에서 ${up ? '올라갈' : '옮겨 갈'} 곳 한눈에${budget ? ` <span class="muted" style="font-weight:400;font-size:13px">더 낼 수 있는 돈 ${S.mvBudget}억 이내(국평 환산 차이)</span>` : ''}</h3>
     <p class="pk-sum">${lead}</p>
     ${cand.length ? `<div class="tbl-wrap"><table class="mv-tbl"><thead><tr><th>${up ? '올라갈 곳' : '옮겨 갈 곳'}</th><th>${up ? '더 필요한 돈' : '남는 돈'}</th><th>${lvHead}</th><th>지난 기록 중</th><th>최근 1년 격차</th><th style="text-align:left">지금은</th></tr></thead><tbody>
       ${cand.map((c) => { const [k, t] = kind(c.P.p); return `<tr data-mvto="${c.r.code}" class="${c.r.code === toR.code ? 'on' : ''}">
@@ -1460,7 +1463,7 @@ function moveAdvice(fromR, toR, toList, up) {
         <td class="num" data-l="최근 1년 격차">${chTxt(c.P.d12)}</td>
         <td><b class="${k}">${t}</b></td></tr>`; }).join('')}
     </tbody></table></div>` : ''}
-    <p class="note">격차가 2013년부터의 기록 중 ${up ? '좁은' : '넓은'} 쪽일수록(= ${fromR.short}가 평소보다 비싸게 팔리는 때) 위에 와요. 줄을 누르면 위 계산기에 그 구가 들어가요.
+    <p class="note">격차가 2013년부터의 기록 중 ${up ? '좁은' : '넓은'} 쪽일수록(= ${fromR.short}가 평소보다 비싸게 팔리는 때) 위에 와요. 줄을 누르면 위 '${up ? '올라갈 곳' : '내려갈 곳'}'이 그 구로 바뀌고 아래에 자세히 나와요.
       과거 기록으로 보면 '좋은 때' ${up ? '올라간' : '옮긴'} 경우 3년 뒤 ${up ? '올라간' : '옮긴'} 곳이 더 오른 경우가 ${up ? '72' : '54'}%, '지금은 비추천'일 때는 ${up ? '46' : '28'}%였어요(1년 안에서는 차이가 거의 없었어요).
       기록이 2013년부터라 큰 흐름이 몇 번뿐이고, 세금·이사 비용·대출·단지 차이는 넣지 않았어요.</p>`;
 }
@@ -1520,12 +1523,15 @@ function renderCon() {
     <div class="con-box"><h3>부동산 갈아타기</h3>
       <ul class="why">${TD.tiers.map(tierLine).join('')}</ul>
       <div class="lv-top" style="margin-top:12px"><span class="seg"><button data-mvdir="up" class="${up ? 'on' : ''}">상급지로 갈아타기</button><button data-mvdir="down" class="${up ? '' : 'on'}">하급지로 갈아타기</button></span></div>
-      <div class="lv-top">지금 사는 곳 <select id="mvFrom">${guOpts(fromList, fromR.code)}</select> → ${up ? '올라갈 곳' : '내려갈 곳'} <select id="mvTo">${guOpts(toList, toR.code)}</select></div>
+      <div class="lv-top mv-pick"><b>지금 사는 곳</b> <select id="mvFrom">${guOpts(fromList, fromR.code)}</select>
+        → <b>${up ? '올라갈 곳' : '내려갈 곳'}</b> <select id="mvTo">${guOpts(toList, toR.code)}</select>
+        ${up ? `<span class="mv-budget">더 낼 수 있는 돈 <input id="mvBudget" type="number" min="0" step="0.5" value="${S.mvBudget > 0 ? S.mvBudget : ''}" placeholder="제한 없음"> 억</span>` : ''}</div>
+      ${moveAdvice(fromR, toR, toList, up)}
+      <h3 class="sec" style="margin-top:22px">${fromR.short} → ${toR.short} 자세히</h3>
       ${PD ? (up
         ? `<p class="pk-sum"><b>올라가기</b>: ${fromR.short}는 지금 ${toR.short} 가격의 <b>${pct(PD.now, 1, false)}</b> (국평 환산 ${eok(PD.a * 84)} → ${eok(PD.b * 84)}, 차이 약 ${eok((PD.b - PD.a) * 84)}) · 2013년부터 범위 ${pct(PD.v[PD.mn], 1, false)}(${dstr(PD.d[PD.mn], true)})~${pct(PD.v[PD.mx], 1, false)}(${dstr(PD.d[PD.mx], true)}), 지난 기록 중 ${topPct(PD.p)}.<br>${moveMsg(PD, toR.short, true)}</p>`
         : `<p class="pk-sum"><b>내려가기</b>: ${fromR.short}는 지금 ${toR.short}의 <b>${PD.now.toFixed(2)}배</b> (국평 환산 ${eok(PD.a * 84)} → ${eok(PD.b * 84)}, 남는 돈 약 ${eok((PD.a - PD.b) * 84)}) · 2013년부터 범위 ${PD.v[PD.mn].toFixed(2)}배(${dstr(PD.d[PD.mn], true)})~${PD.v[PD.mx].toFixed(2)}배(${dstr(PD.d[PD.mx], true)}), 지난 기록 중 ${topPct(PD.p)}.<br>${moveMsg(PD, toR.short, false)}</p>`)
         : '<p class="note">서로 다른 두 구를 골라 주세요.</p>'}
-      ${moveAdvice(fromR, toR, toList, up)}
     </div>
     <p class="note">지난 가격 흐름을 정해 둔 규칙대로 해석한 참고 자료예요. 세금·거래 비용·개인 상황은 반영하지 않았고, 투자 권유가 아니에요.</p>
     ${PUBLIC ? `<div class="con-box yt-box"><p>이 지표를 어떻게 읽고 쓰는지, 자산 배분과 서울 아파트 사이클 이야기는 유튜브 <b>${CHANNEL.name}</b>에서 그림으로 풀어요.</p>${ytLinkHTML('채널 보기')}</div>` : ''}`;
