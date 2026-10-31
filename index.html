@@ -74,6 +74,12 @@ header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;
 .seg button+button{border-left:1px solid var(--line)}
 .seg button.on{background:var(--brand);color:var(--panel);font-weight:700}
 .ghost{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px}
+/* 공개판: 만든 유튜브 채널 */
+.yt{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 9px;font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;white-space:nowrap}
+.yt:hover{background:var(--line2)}
+.yt svg{flex:none}
+.yt-box{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.yt-box p{margin:0;flex:1;min-width:220px;font-size:14px;color:var(--sub)}
 .ghost:hover{background:var(--line2)}
 main{max-width:1320px;margin:0 auto;padding:16px 20px 40px}
 .muted{color:var(--muted)}
@@ -189,7 +195,12 @@ th:first-child,td:first-child{text-align:left}
 .tbar{display:inline-block;position:relative;width:110px;height:8px;background:var(--track);border-radius:4px;vertical-align:middle;margin-right:8px}
 .tbar::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--ink);opacity:.45}
 .tbar i{position:absolute;top:0;bottom:0;border-radius:4px}
-#tempTable tbody tr,#relTable tbody tr{cursor:pointer}
+#tempTable tbody tr,#relTable tbody tr,.mv-tbl tbody tr{cursor:pointer}
+.mv-tbl tbody tr:hover td{background:var(--line2)}
+.mv-tbl tr.on td{background:var(--brand-w)}
+.mv-tbl th,.mv-tbl td{white-space:normal}
+.mv-tbl td small{display:block}
+.mv-tbl td:last-child{white-space:nowrap;text-align:left}
 #tempTable tbody tr:hover td,#relTable tbody tr:hover td{background:var(--line2)}
 #tempTable tr.on td,#relTable tr.on td{background:var(--brand-w)}
 td small{font-size:11.5px}
@@ -201,6 +212,23 @@ td small{font-size:11.5px}
 .tcell .tbar{margin:0;width:76px}
 .tcell b{font-size:14px}
 .tcell small{grid-column:1 / 3;display:block;color:var(--muted);font-size:11.5px;line-height:1.3;margin-top:2px}
+/* 지난 1년 온도 작은 선 · 오늘의 온도 그림 (바탕화면 판만) */
+.spark{display:block;overflow:visible}
+.spark polyline{fill:none;stroke:var(--sub);stroke-width:1.6;stroke-linejoin:round}
+.spark .sp-mid{stroke:var(--axis);stroke-dasharray:2 3}
+.spark .sp-up{fill:var(--up)} .spark .sp-dn{fill:var(--dn)} .spark .sp-z{fill:var(--muted)}
+#tempTable td.tr-hist{text-align:left;width:1%;white-space:nowrap}
+.d-head .shot-open{margin-left:auto}
+.shot-ov{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.shot-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;width:min(560px,100%);max-height:100%;overflow:auto}
+.shot-top,.shot-bar{display:flex;align-items:center;gap:10px}
+.shot-top b{font-size:16px}
+.shot-top .ghost{margin-left:auto}
+.shot-img{margin:10px 0}
+.shot-img canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px}
+.shot-bar label{display:flex;align-items:center;gap:6px;font-size:13.5px;cursor:pointer}
+.shot-bar .gap{flex:1}
+.shot-bar .main{background:var(--brand);color:var(--panel);border-color:var(--brand);font-weight:700}
 ul.why{margin:6px 0 0;padding-left:18px;font-size:13.5px;color:var(--sub)}
 ul.why li{margin:5px 0}
 ul.why b{color:var(--ink)}
@@ -240,18 +268,18 @@ footer{margin-top:22px;font-size:12.5px;color:var(--muted);line-height:1.7}
   th,td{padding:6px 4px}
   .d-head h2 span{display:block;margin:2px 0 0}
   /* 휴대폰: 자산 온도·구별 상대 평가 표는 줄마다 카드로 — 이름과 온도를 첫 줄에, 나머지는 이름표를 달아 아래로 */
-  #tempTable,#tempTable tbody,#relTable,#relTable tbody{display:block;width:100%}
-  #tempTable thead,#relTable thead{display:none}
-  #tempTable tr,#relTable tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 12px;padding:11px 4px;border-bottom:1px solid var(--line)}
-  #tempTable tr.on,#relTable tr.on{background:var(--brand-w)}
-  #tempTable td,#relTable td{display:block;border:0;padding:0;text-align:left;white-space:normal;width:auto;background:none!important}
-  #tempTable td:first-child,#relTable td:first-child{font-weight:700;font-size:15.5px;align-self:center}
-  #tempTable td:last-child,#relTable td:last-child{grid-column:2;grid-row:1;justify-self:end;width:auto;white-space:normal}
+  #tempTable,#tempTable tbody,#relTable,#relTable tbody,.mv-tbl,.mv-tbl tbody{display:block;width:100%}
+  #tempTable thead,#relTable thead,.mv-tbl thead{display:none}
+  #tempTable tr,#relTable tr,.mv-tbl tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 12px;padding:11px 4px;border-bottom:1px solid var(--line)}
+  #tempTable tr.on,#relTable tr.on,.mv-tbl tr.on{background:var(--brand-w)}
+  #tempTable td,#relTable td,.mv-tbl td{display:block;border:0;padding:0;text-align:left;white-space:normal;width:auto;background:none!important}
+  #tempTable td:first-child,#relTable td:first-child,.mv-tbl td:first-child{font-weight:700;font-size:15.5px;align-self:center}
+  #tempTable td:last-child,#relTable td:last-child,.mv-tbl td:last-child{grid-column:2;grid-row:1;justify-self:end;width:auto;white-space:normal}
   .tcell{grid-template-columns:56px auto}
   .tcell .tbar{width:56px}
-  #tempTable td[data-l]::before,#relTable td[data-l]::before{content:attr(data-l);display:block;font-size:11.5px;color:var(--muted);font-weight:400}
+  #tempTable td[data-l]::before,#relTable td[data-l]::before,.mv-tbl td[data-l]::before{content:attr(data-l);display:block;font-size:11.5px;color:var(--muted);font-weight:400}
   #tempTable td.wide{grid-column:1 / -1}
-  #tempTable td:not(:last-child) small,#relTable td:not(:last-child) small{display:inline;margin-left:4px}
+  #tempTable td:not(:last-child) small,#relTable td:not(:last-child) small,.mv-tbl td:not(:last-child) small{display:inline;margin-left:4px}
   /* 구 표: 휴대폰에서는 국평·올해·1년·고점 대비만 */
   #aptTable th:nth-child(2),#aptTable td:nth-child(2),#aptTable th:nth-child(3),#aptTable td:nth-child(3),
   #aptTable th:nth-child(5),#aptTable td:nth-child(5),#aptTable th:nth-child(8),#aptTable td:nth-child(8),
@@ -275,6 +303,7 @@ footer{margin-top:22px;font-size:12.5px;color:var(--muted);line-height:1.7}
     <span id="fx"></span>
     <span id="status"><span class="dot"></span>불러오는 중</span>
     <button class="ghost" id="reload" title="일별 기록과 아파트 자료를 처음부터 다시 받아요">기록 다시 받기</button>
+    <a class="yt" id="ytLink" target="_blank" rel="noopener" hidden></a>
   </div>
 </header>
 <main>
@@ -316,14 +345,17 @@ const $ = (s, el = document) => el.querySelector(s);
 const DAY = 864e5;
 // 공개판: 서버 없이 data/*.json 을 읽고(한 시간마다 클라우드에서 갱신), '내 자산 리밸런싱' 칸은 뺀다
 const PUBLIC = !!window.ASSET_PUBLIC;
+// 공개판을 만든 유튜브 채널 (공개판에서만 머리·결론 끝·맨 아래에 보인다)
+const CHANNEL = { name: '평온을 사는 투자', url: 'https://www.youtube.com/@pyeongon_invest' };
+const ytLinkHTML = (label = CHANNEL.name) => `<a class="yt" href="${CHANNEL.url}" target="_blank" rel="noopener"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><rect width="16" height="12" rx="3" fill="#e0302a"/><path d="M6.4 3.4v5.2L10.8 6z" fill="#fff"/></svg>${label}</a>`;
 const MAX_YEARS = 20; // 주식·금·비트코인·환율은 최근 20년까지만 (닷컴 버블 같은 옛 구간은 빼고)
 const S = { assets: [], apt: null, aptRows: [], live: null, liveErr: false, sel: 'VOO', period: '20y', log: true, krw: false, sort: { key: 'cur', dir: 1 } };
 S.lvBase = null; S.lvSel = null; // 구별 가격 수준: 기준 구(없으면 가장 비싼 구), 흐름을 볼 구
 // 화면 탭: sum 전체 요약 · fin 금융 투자 · apt 부동산 · con 결론. 자세히는 금융(selFin)·부동산(selApt) 탭에 따로 기억
 S.tab = 'sum'; S.selFin = 'VOO'; S.selApt = 'APT1100000000'; S.mvFrom = '1162000000'; S.mvTo = '1168000000'; S.mvDir = 'up'; // 갈아타기: up 상급지로, down 하급지로 S.hold = []; // 결론 탭에서 고른 '내 자산'
-try { const p = JSON.parse(localStorage.getItem('assetMonitor.v1') || '{}'); Object.assign(S, { period: p.period && p.period !== 'all' ? p.period : S.period, log: p.log ?? S.log, krw: !!p.krw, sort: p.sort || S.sort, lvBase: p.lvBase || null, lvSel: p.lvSel || null, tab: p.tab || 'sum', selFin: p.selFin || S.selFin, selApt: p.selApt || S.selApt, mvFrom: p.mvFrom || S.mvFrom, mvTo: p.mvTo || S.mvTo, mvDir: p.mvDir === 'down' ? 'down' : 'up', hold: Array.isArray(p.hold) ? p.hold : [] }); } catch (e) {}
+try { const p = JSON.parse(localStorage.getItem('assetMonitor.v1') || '{}'); Object.assign(S, { period: p.period && p.period !== 'all' ? p.period : S.period, log: p.log ?? S.log, krw: !!p.krw, sort: p.sort || S.sort, lvBase: p.lvBase || null, lvSel: p.lvSel || null, tab: p.tab || 'sum', selFin: p.selFin || S.selFin, selApt: p.selApt || S.selApt, mvFrom: p.mvFrom || S.mvFrom, mvTo: p.mvTo || S.mvTo, mvDir: p.mvDir === 'down' ? 'down' : 'up', mvBudget: p.mvBudget > 0 ? p.mvBudget : null, hold: Array.isArray(p.hold) ? p.hold : [] }); } catch (e) {}
 S.sel = S.tab === 'apt' ? S.selApt : S.selFin;
-function remember() { try { localStorage.setItem('assetMonitor.v1', JSON.stringify({ period: S.period, log: S.log, krw: S.krw, sort: S.sort, lvBase: S.lvBase, lvSel: S.lvSel, tab: S.tab, selFin: S.selFin, selApt: S.selApt, mvFrom: S.mvFrom, mvTo: S.mvTo, mvDir: S.mvDir, hold: S.hold })); } catch (e) {} }
+function remember() { try { localStorage.setItem('assetMonitor.v1', JSON.stringify({ period: S.period, log: S.log, krw: S.krw, sort: S.sort, lvBase: S.lvBase, lvSel: S.lvSel, tab: S.tab, selFin: S.selFin, selApt: S.selApt, mvFrom: S.mvFrom, mvTo: S.mvTo, mvDir: S.mvDir, mvBudget: S.mvBudget, hold: S.hold })); } catch (e) {} }
 function pick(id) { // 종목·지역을 고르면 그 탭의 자세히로
   if (String(id).startsWith('APT')) S.selApt = id; else S.selFin = id;
   S.sel = id;
@@ -1087,23 +1119,77 @@ function scoreBar(x) {
   const w = Math.min(50, Math.abs(x) / 2);
   return `<span class="tbar" title="왼쪽 = 싼 쪽, 오른쪽 = 비싼 쪽"><i style="left:${x >= 0 ? 50 : 50 - w}%;width:${w}%;background:var(--${x >= 0 ? 'up' : 'dn'})"></i></span>`;
 }
+// ── 온도 흐름 (바탕화면 판만): 지난 12달 매달 마지막 날에 '그날까지의 기록만으로' 온도를 다시 셈한다 ──
+//   그때의 시세·장기 평균·자산끼리 순위 그대로라, 뒤에 알게 된 값은 섞이지 않는다. 지금 값은 temps()(실시간 시세 포함).
+//   한 번 셈하는 데 1초 가까이 걸려서, 화면을 먼저 그린 뒤 한 달씩 나눠 셈하고(그사이 화면이 멈추지 않게)
+//   기록이 바뀌지 않는 하루 동안은 브라우저에 둔다. now = true 면 기다리지 않고 바로 셈한다(그림 만들 때).
+let TH = null, THjob = null;
+const thKey = (krw) => `${HIST && HIST.fetched}|${S.apt && S.apt.fetched}|${krw}|${S.assets.length}|${S.aptRows.length}`;
+function thEnds() { // 지난 12달의 마지막 날
+  const last = Math.max(...S.assets.map((a) => a.d[a.d.length - 1])), t0 = new Date(last * DAY), ends = [];
+  for (let k = 12; k >= 1; k--) ends.push(Date.UTC(t0.getUTCFullYear(), t0.getUTCMonth() - k + 1, 0) / DAY);
+  return ends;
+}
+function thPoint(end, krw) { // 그날까지의 기록만 남기고 온도를 셈한 뒤 바로 되돌린다
+  const keep = { assets: S.assets, aptRows: S.aptRows, live: S.live };
+  const cut = (a) => { const k = idxBefore(a.d, end + 1); return k >= 0 && k < a.d.length - 1 ? { ...a, d: a.d.slice(0, k + 1), v: a.v.slice(0, k + 1) } : a; };
+  try {
+    S.assets = keep.assets.map(cut); S.aptRows = keep.aptRows.map(cut); S.live = null;
+    return { day: end, sc: new Map(temps(krw).map((t) => [t.s.id, t.score])) };
+  } finally { S.assets = keep.assets; S.aptRows = keep.aptRows; S.live = keep.live; }
+}
+function thSave(key, pts) {
+  TH = { key, pts };
+  try { localStorage.setItem('assetMonitor.th', JSON.stringify({ key, pts: pts.map((p) => ({ day: p.day, sc: [...p.sc] })) })); } catch (e) { /* 저장 못 해도 화면은 그대로 */ }
+  return TH;
+}
+function tempHistory(krw = S.krw, now = false) {
+  const key = thKey(krw);
+  if (TH && TH.key === key) return TH;
+  if (!S.aptTried) return null; // 아파트 자료를 받아 본 뒤에 (서울 아파트도 같이 셈하도록)
+  try {
+    const c = JSON.parse(localStorage.getItem('assetMonitor.th') || 'null');
+    if (c && c.key === key) { TH = { key, pts: c.pts.map((p) => ({ day: p.day, sc: new Map(p.sc) })) }; return TH; }
+  } catch (e) { /* 없으면 새로 셈 */ }
+  if (now) return thSave(key, thEnds().map((e) => thPoint(e, krw)));
+  if (!THjob) THjob = (async () => {
+    const pts = [];
+    // 한 달마다 화면에 차례를 넘긴다 (setTimeout은 창이 뒤에 있으면 1분까지 늦어져 MessageChannel로)
+    const breathe = () => new Promise((r) => { const ch = new MessageChannel(); ch.port1.onmessage = () => r(); ch.port2.postMessage(0); });
+    try { for (const e of thEnds()) { await breathe(); pts.push(thPoint(e, krw)); } }
+    finally { THjob = null; }
+    if (key !== thKey(krw)) return; // 그사이 기록이 바뀌었으면 버린다
+    if (!(TH && TH.key === key)) thSave(key, pts);
+    renderTemp(); renderCon();
+  })();
+  return null;
+}
+const monthTxt = (day) => { const t = new Date(day * DAY); return `${String(t.getUTCFullYear()).slice(2)}.${t.getUTCMonth() + 1}월`; };
+// 지난 1년 온도 작은 선: 가운데 점선 = 보통, 위 = 비싼 쪽, 아래 = 싼 쪽, 끝 점 = 지금
+function sparkSVG(vals, days) {
+  const w = 96, h = 26, n = vals.length, y = (x) => (h / 2 - (x / 100) * (h / 2 - 3)).toFixed(1), x = (i) => (2 + (i * (w - 6)) / (n - 1)).toFixed(1);
+  const tip = vals.map((v, i) => `${days[i] ? monthTxt(days[i]) : '지금'} ${verdict(v)}`).join('\n');
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><title>${tip}</title><line x1="0" x2="${w}" y1="${h / 2}" y2="${h / 2}" class="sp-mid"/><polyline points="${vals.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/><circle cx="${x(n - 1)}" cy="${y(vals[n - 1])}" r="3" class="sp-${vClass(vals[n - 1]) || 'z'}"/></svg>`;
+}
 function renderTemp() {
   const el = $('#temp');
   if (!S.assets.length) return;
   const T = temps(), n = T.length, hot = T[0], cold = T[n - 1];
+  const H = PUBLIC ? null : tempHistory(), prevOf = (id) => (H ? H.pts[H.pts.length - 1].sc.get(id) : null);
   // 달러 자산은 다른 기준(달러↔원화)의 판정도 작게
   const alt = new Map(temps(!S.krw).map((t) => [t.s.id, t]));
   const altLbl = S.krw ? '달러' : '원화';
-  el.innerHTML = `<div class="d-head"><h2>자산 온도<span>자산 배분용 · 현금 제외 · 비싸다 · 약간 비싸다 · 보통 · 약간 싸다 · 싸다</span></h2></div>
+  el.innerHTML = `<div class="d-head"><h2>자산 온도<span>자산 배분용 · 현금 제외 · 비싸다 · 약간 비싸다 · 보통 · 약간 싸다 · 싸다</span></h2>${PUBLIC ? '' : '<button class="ghost shot-open" data-shot>오늘의 온도 그림</button>'}</div>
     <div class="notice"><b>싸다·비싸다는 절대적인 판단이 아니에요.</b> 이 자산의 지난 20년 흐름, 그리고 다른 자산들과 견준 <b>상대적인 온도</b>예요. '비싸다'는 "평소보다, 다른 자산보다 많이 올라 있다"는 뜻일 뿐 떨어진다는 예측이 아니에요. 비싸도 더 오를 수 있고, 싸도 더 내릴 수 있어요. 특히 <b>상승 흐름</b>인 자산은 비싼 구간에서도 한동안 더 오르는 경우가 많아요 — 서울 아파트처럼 한번 오르기 시작하면 몇 년씩 오르는 경향이 있는 자산이 그래요.</div>
     <p class="pk-sum">지금 가장 비싼 쪽: <b class="up">${aName(hot.s)}</b> · 가장 싼 쪽: <b class="dn">${aName(cold.s)}</b> <span class="muted">(상대적으로)</span></p>
-    <div class="tbl-wrap"><table id="tempTable"><thead><tr><th>자산</th><th>지금 흐름</th><th>최근 수익률(연)</th><th>고점 대비</th><th>평범한 하락의 몇 배</th><th style="text-align:left">온도</th></tr></thead><tbody>
+    <div class="tbl-wrap"><table id="tempTable"><thead><tr><th>자산</th><th>지금 흐름</th><th>최근 수익률(연)</th><th>고점 대비</th><th>평범한 하락의 몇 배</th>${H ? '<th style="text-align:left">지난 1년 온도</th>' : ''}<th style="text-align:left">온도</th></tr></thead><tbody>
     ${T.map((t) => { const c = t.c, mo = t.s.kind === 'm', a = alt.get(t.s.id); return `<tr data-id="${t.s.id}" class="${S.sel === t.s.id ? 'on' : ''}">
       <td>${aName(t.s)}${t.s.cur === 'KRW' ? ' <small class="muted">원화</small>' : ''}</td>
       <td data-l="지금 흐름">${trendHTML(trendOf(t.s))}</td>
       <td class="num wide" data-l="최근 수익률(연)">${[['1년', c.c1], ['3년', c.c3], ['5년', c.c5]].filter(([, r]) => r != null).map(([k, r]) => `${k} <span class="${r > c.cagr ? 'up' : 'dn'}">${pct(r)}</span>`).join(' · ')} <small class="muted">장기 평균 ${pct(c.cagr)}</small></td>
       <td class="num" data-l="고점 대비"><span class="${c.cur < -0.0005 ? 'dn' : 'up'}">${peakTxt(c.cur)}</span> <small class="muted">최대 낙폭 ${pct(c.mdd, 0)}</small>${mo && t.pk ? `<small class="muted">전고점(${dstr(t.pk.day, true)}) 대비 ${pct(t.pk.now)}${t.pk.now >= 0 ? ' 넘음' : ''}</small>` : ''}</td>
       <td class="num" data-l="평범한 하락의 몇 배">${c.iddMed < 0 ? (c.cur / c.iddMed).toFixed(1) + '배' : '–'} <small class="muted">보통 ${pct(c.iddMed, 1)}</small></td>
+      ${H ? (() => { const ps = H.pts.filter((p) => p.sc.has(t.s.id)), pv = prevOf(t.s.id); return `<td class="tr-hist" data-l="지난 1년 온도">${sparkSVG([...ps.map((p) => p.sc.get(t.s.id)), t.score], [...ps.map((p) => p.day), null])}<small class="muted">한 달 전 ${pv == null ? '–' : verdict(pv)}</small></td>`; })() : ''}
       <td><div class="tcell">${scoreBar(t.score)}${vTag(t.score)}${a && t.s.cur !== a.s.cur ? `<small>${altLbl} 기준 ${verdict(a.score)}</small>` : ''}</div></td></tr>`; }).join('')}
     </tbody></table></div>
     <div class="con-box"><h3>온도를 이렇게 계산한 이유</h3><ul class="why">
@@ -1338,6 +1424,46 @@ function moveMsg(t, toName, up = true) {
   }
   return `${trend}격차는 역대 보통 수준이에요 → 지표상 뚜렷한 방향은 없어요`;
 }
+// 지금 사는 곳에서 갈 수 있는 구를 모두 격차 위치로 줄 세운 조언 (위 moveMsg와 같은 잣대: 상위 30% 안 = 좋은 때, 하위 30% = 지금은 비추천)
+// 과거 검증(2026-10, 서울 25개 구 ㎡당 2013.04~, 같은 날 그때까지의 기록만으로 판정 → 그 뒤 두 구의 가격 비율 변화):
+//   올라가기: 3년 뒤 올라간 곳이 더 오른 경우 좋은 때 72% · 보통 70% · 비추천 46% (2년 69·65·55%, 1년은 셋 다 61~62%로 차이 없음)
+//   옮겨 가기(하급지로): 3년 뒤 옮긴 곳이 더 오른 경우 좋은 때 54% · 보통 30% · 비추천 28%
+function moveAdvice(fromR, toR, toList, up) {
+  const budget = up && S.mvBudget > 0 ? S.mvBudget * 1e4 : null; // 억 → 만 원(㎡당 값의 단위)
+  const cand = toList.map((r) => { const P = pairData(fromR.code, r.code); return P && { r, P, cost: Math.abs(P.b - P.a) * 84 }; })
+    .filter((c) => c && (!budget || c.cost <= budget)).sort((a, b) => b.P.p - a.P.p);
+  const kind = (p) => (p >= 0.7 ? ['dn', '좋은 때'] : p <= 0.3 ? ['up', '지금은 비추천'] : ['', '보통']);
+  const goods = cand.filter((c) => c.P.p >= 0.7), verb = up ? '올라가기' : '옮겨 가기', where = up ? '상급지' : '하급지';
+  // 좋은 때가 되려면: 지금 사는 곳 ÷ 그곳 비율이 지난 기록의 70% 지점을 넘으면 된다
+  const need = (P) => { const xs = P.v.slice().sort((a, b) => a - b); return xs[Math.min(xs.length - 1, Math.ceil(0.7 * (xs.length - 1)))]; };
+  const lvNum = (x) => (up ? pct(x, 1, false) : x.toFixed(2) + '배');
+  let lead;
+  if (!cand.length) lead = `이 돈으로 갈 수 있는 ${where}가 없어요. 금액을 늘려 보세요.`;
+  else if (goods.length) lead = `지표상 지금 ${fromR.short}에서 ${verb} 좋은 곳: ${goods.slice(0, 5).map((c) => `<b class="dn">${c.r.short}</b>`).join(', ')}${goods.length > 5 ? ` 등 ${goods.length}곳` : ''}`;
+  else {
+    const near = cand.slice(0, 2).map((c) => `${c.r.short}는 지금 ${lvNum(c.P.now)} → <b>${lvNum(need(c.P))}</b> 이상`).join(', ');
+    lead = `지금은 ${fromR.short}에서 ${verb} 좋은 때가 아니에요 — ${budget ? '이 돈으로 갈 수 있는 ' : ''}${where} 모두 격차가 평소 수준이거나 ${up ? '넓은' : '좁은'} 쪽이에요.<br>
+      <span class="muted">기다릴 때 볼 숫자(${fromR.short}가 그곳 가격의 ${up ? '몇 %' : '몇 배'}가 되면 '좋은 때'): ${near}</span>`;
+  }
+  const chTxt = (ch) => (ch == null ? '–' : Math.abs(ch) <= 0.01 ? '비슷' : up ? `${ch > 0 ? '좁아짐' : '벌어짐'} ${pp(Math.abs(ch)).replace('+', '')}` : `${ch > 0 ? '벌어짐' : '좁아짐'} ${Math.abs(ch).toFixed(2)}배`);
+  const lvTxt = (P) => (up ? `${pct(P.now, 1, false)} <small class="muted">${pct(P.v[P.mn], 0, false)}~${pct(P.v[P.mx], 0, false)}</small>` : `${P.now.toFixed(2)}배 <small class="muted">${P.v[P.mn].toFixed(2)}~${P.v[P.mx].toFixed(2)}배</small>`);
+  const lvHead = up ? `${fromR.short} = 그곳의 몇 %` : `${fromR.short} = 그곳의 몇 배`;
+  return `<h3 class="sec" style="margin-top:20px">${fromR.short}에서 ${up ? '올라갈' : '옮겨 갈'} 곳 한눈에</h3>
+    ${up ? `<div class="lv-top">더 낼 수 있는 돈 <input id="mvBudget" type="number" min="0" step="0.5" value="${S.mvBudget > 0 ? S.mvBudget : ''}" placeholder="제한 없음" style="width:110px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--panel)"> 억 <span class="muted">국평(84㎡) 환산 가격 차이로 걸러요</span></div>` : ''}
+    <p class="pk-sum">${lead}</p>
+    ${cand.length ? `<div class="tbl-wrap"><table class="mv-tbl"><thead><tr><th>${up ? '올라갈 곳' : '옮겨 갈 곳'}</th><th>${up ? '더 필요한 돈' : '남는 돈'}</th><th>${lvHead}</th><th>지난 기록 중</th><th>최근 1년 격차</th><th style="text-align:left">지금은</th></tr></thead><tbody>
+      ${cand.map((c) => { const [k, t] = kind(c.P.p); return `<tr data-mvto="${c.r.code}" class="${c.r.code === toR.code ? 'on' : ''}">
+        <td>${c.r.short} <small class="muted">국평 ${eok(c.r.sqm * 84)}</small></td>
+        <td class="num" data-l="${up ? '더 필요한 돈' : '남는 돈'}">약 ${eok(c.cost)}</td>
+        <td class="num" data-l="${lvHead}">${lvTxt(c.P)}</td>
+        <td class="num" data-l="지난 기록 중">${topPct(c.P.p)}</td>
+        <td class="num" data-l="최근 1년 격차">${chTxt(c.P.d12)}</td>
+        <td><b class="${k}">${t}</b></td></tr>`; }).join('')}
+    </tbody></table></div>` : ''}
+    <p class="note">격차가 2013년부터의 기록 중 ${up ? '좁은' : '넓은'} 쪽일수록(= ${fromR.short}가 평소보다 비싸게 팔리는 때) 위에 와요. 줄을 누르면 위 계산기에 그 구가 들어가요.
+      과거 기록으로 보면 '좋은 때' ${up ? '올라간' : '옮긴'} 경우 3년 뒤 ${up ? '올라간' : '옮긴'} 곳이 더 오른 경우가 ${up ? '72' : '54'}%, '지금은 비추천'일 때는 ${up ? '46' : '28'}%였어요(1년 안에서는 차이가 거의 없었어요).
+      기록이 2013년부터라 큰 흐름이 몇 번뿐이고, 세금·이사 비용·대출·단지 차이는 넣지 않았어요.</p>`;
+}
 // 결론: 지금 싼 쪽·비싼 쪽 → 가진 자산을 고르면 규칙(상대적으로 비싼 쪽을 줄이고 싼 쪽으로, 현금 제외)대로 리밸런싱 방향 → 갈아타기
 function renderCon() {
   const el = $('#con');
@@ -1375,8 +1501,17 @@ function renderCon() {
   S.mvFrom = fromR.code; S.mvTo = toR.code;
   const guOpts = (list, sel) => list.map((r) => `<option value="${r.code}" ${r.code === sel ? 'selected' : ''}>${r.short} (국평 ${eok(r.sqm * 84)})</option>`).join('');
   const PD = pairData(fromR.code, toR.code);
-  el.innerHTML = `<div class="d-head"><h2>결론<span>${dstr(Math.floor(Date.now() / DAY))} 기준 · 달러 자산은 ${basis} 기준 · 현금 제외</span></h2></div>
-    <div class="con-box"><h3>지금은 <span class="muted" style="font-weight:400;font-size:13px">상대적인 온도</span></h3><ul class="why">${nowList}</ul>
+  // 지난달 말과 비교 (바탕화면 판만)
+  let changed = '';
+  const H = PUBLIC ? null : tempHistory();
+  if (H) {
+    const P = H.pts[H.pts.length - 1];
+    const ch = T.filter((t) => P.sc.has(t.s.id) && verdict(P.sc.get(t.s.id)) !== verdict(t.score))
+      .map((t) => `${aName(t.s)} <span class="${vClass(P.sc.get(t.s.id))}">${verdict(P.sc.get(t.s.id))}</span> → <b class="${vClass(t.score)}">${verdict(t.score)}</b>`);
+    changed = `<p class="pk-sum">${new Date(P.day * DAY).getUTCMonth() + 1}월 말보다 ${ch.length ? `바뀐 자산: ${ch.join(', ')}` : '바뀐 자산이 없어요.'}</p>`;
+  }
+  el.innerHTML = `<div class="d-head"><h2>결론<span>${dstr(Math.floor(Date.now() / DAY))} 기준 · 달러 자산은 ${basis} 기준 · 현금 제외</span></h2>${PUBLIC ? '' : '<button class="ghost shot-open" data-shot>오늘의 온도 그림</button>'}</div>
+    <div class="con-box"><h3>지금은 <span class="muted" style="font-weight:400;font-size:13px">상대적인 온도</span></h3>${changed}<ul class="why">${nowList}</ul>
       <p class="note">'비싸다'는 평소보다·다른 자산보다 많이 올라 있다는 뜻이지, 떨어진다는 예측이 아니에요. 오르는 흐름이면 비싸도 더 오를 수 있어요.</p></div>
     ${PUBLIC ? '' : `<div class="con-box"><h3>내 자산으로 보면</h3>
       <div class="holds">${order.map((t) => `<label><input type="checkbox" data-hold="${t.s.id}" ${held.has(t.s.id) ? 'checked' : ''}> ${aName(t.s)} <span class="${vClass(t.score)}">${verdict(t.score)}</span></label>`).join('')}</div>
@@ -1390,8 +1525,10 @@ function renderCon() {
         ? `<p class="pk-sum"><b>올라가기</b>: ${fromR.short}는 지금 ${toR.short} 가격의 <b>${pct(PD.now, 1, false)}</b> (국평 환산 ${eok(PD.a * 84)} → ${eok(PD.b * 84)}, 차이 약 ${eok((PD.b - PD.a) * 84)}) · 2013년부터 범위 ${pct(PD.v[PD.mn], 1, false)}(${dstr(PD.d[PD.mn], true)})~${pct(PD.v[PD.mx], 1, false)}(${dstr(PD.d[PD.mx], true)}), 지난 기록 중 ${topPct(PD.p)}.<br>${moveMsg(PD, toR.short, true)}</p>`
         : `<p class="pk-sum"><b>내려가기</b>: ${fromR.short}는 지금 ${toR.short}의 <b>${PD.now.toFixed(2)}배</b> (국평 환산 ${eok(PD.a * 84)} → ${eok(PD.b * 84)}, 남는 돈 약 ${eok((PD.a - PD.b) * 84)}) · 2013년부터 범위 ${PD.v[PD.mn].toFixed(2)}배(${dstr(PD.d[PD.mn], true)})~${PD.v[PD.mx].toFixed(2)}배(${dstr(PD.d[PD.mx], true)}), 지난 기록 중 ${topPct(PD.p)}.<br>${moveMsg(PD, toR.short, false)}</p>`)
         : '<p class="note">서로 다른 두 구를 골라 주세요.</p>'}
+      ${moveAdvice(fromR, toR, toList, up)}
     </div>
-    <p class="note">지난 가격 흐름을 정해 둔 규칙대로 해석한 참고 자료예요. 세금·거래 비용·개인 상황은 반영하지 않았고, 투자 권유가 아니에요.</p>`;
+    <p class="note">지난 가격 흐름을 정해 둔 규칙대로 해석한 참고 자료예요. 세금·거래 비용·개인 상황은 반영하지 않았고, 투자 권유가 아니에요.</p>
+    ${PUBLIC ? `<div class="con-box yt-box"><p>이 지표를 어떻게 읽고 쓰는지, 자산 배분과 서울 아파트 사이클 이야기는 유튜브 <b>${CHANNEL.name}</b>에서 그림으로 풀어요.</p>${ytLinkHTML('채널 보기')}</div>` : ''}`;
 }
 
 // ── 구별 가격 수준(가장 비싼 구 = 100%) ──
@@ -1544,11 +1681,114 @@ function renderFoot(h) {
     <b>시세</b> · 미국 ETF는 미국 장중(한국 밤 10:30~새벽 5:00, 서머타임 끝나면 11:30~6:00)에 움직이고 · 코스피는 네이버 증권 · 비트코인은 24시간(달러는 야후, 원화는 업비트) · ${PUBLIC ? '한 시간마다 자동으로 새로 받아요' : '화면은 15초마다 새로 받아요'}<br>
     <b>연평균 수익률</b> = 처음 값에서 지금 값까지 해마다 같은 비율로 불었다고 볼 때의 비율(복리) · <b>최대 낙폭(MDD)</b> = 그때까지의 최고가에서 가장 많이 빠졌던 비율(역대급 하락) · <b>연중 최대 하락</b> = 해마다 그 해 안에서 고점 → 저점으로 가장 많이 빠진 폭, 그 가운데 값이 '평범한 해의 하락' · <b>고점 대비</b> = 지금까지의 최고가보다 지금 얼마나 낮은지<br>
     일별 기록 ${h ? h.fetched : ''} 받음${PUBLIC ? '' : ' · 기록은 하루 한 번 새로 받아 자산모니터 폴더의 기록에 둬요'}. 자료: 야후 파이낸스·네이버 증권·업비트·KB부동산. 지난 수익률은 앞으로의 수익을 뜻하지 않아요. <b>싸다·비싸다는 지난 가격 흐름으로 본 상대적인 온도이고, 투자 권유가 아니에요. 투자 판단과 책임은 본인에게 있어요.</b>
+    ${PUBLIC ? `<br>만든 곳 · 유튜브 <a href="${CHANNEL.url}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">${CHANNEL.name}</a>` : ''}
     ${errs.length ? `<div class="err">받지 못한 기록(지난 기록으로 보여요): ${errs.join(' · ')}</div>` : ''}`;
 }
 
+// ── 오늘의 자산 온도 그림 (바탕화면 판만) ──────────
+// 1080×1350(4:5) 한 장: 블로그·인스타 피드·카톡에 그대로. 화면 색과 같은 밝은 판, 달러/원화는 화면 위 기준을 따른다.
+// [저장] = 자산모니터\그림\날짜_자산온도.png (서버 /api/shot), [복사] = 클립보드에 그림 그대로
+function drawShot(url) {
+  const W = 1080, Hh = 1350, cv = document.createElement('canvas');
+  cv.width = W; cv.height = Hh;
+  const g = cv.getContext('2d'), F = '"Malgun Gothic","맑은 고딕",sans-serif';
+  const C = { bg: '#f4f5f3', panel: '#fcfcfb', ink: '#0b0b0b', sub: '#52514e', muted: '#7d7b75', line: '#e1e0d9', line2: '#efeee9', track: '#e9e8e2', brand: '#17365E', up: '#e34948', dn: '#2a78d6', upT: '#c42f2f', dnT: '#1c5cab' };
+  const font = (w, px) => { g.font = `${w} ${px}px ${F}`; };
+  const T = temps(), P = tempHistory(S.krw, true).pts, prev = P[P.length - 1].sc;
+  const X = 56, PW = W - 2 * X, L = X + 48, R = X + PW - 48;
+  g.fillStyle = C.bg; g.fillRect(0, 0, W, Hh);
+  g.fillStyle = C.panel; g.strokeStyle = C.line; g.lineWidth = 2;
+  g.beginPath(); g.roundRect(X, 48, PW, Hh - 96, 28); g.fill(); g.stroke();
+  const now = new Date();
+  g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  g.fillStyle = C.brand; font(700, 64); g.fillText('오늘의 자산 온도', L, 148);
+  g.fillStyle = C.muted; font(400, 28);
+  g.fillText(`${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 · 달러 자산은 ${S.krw ? '원화' : '달러'} 기준 · 현금 제외`, L, 200);
+  g.strokeStyle = C.line; g.beginPath(); g.moveTo(L, 238); g.lineTo(R, 238); g.stroke();
+  const rowH = 118, y0 = 238, bw = 170, vw = 214;
+  T.forEach((t, i) => {
+    const top = y0 + 8 + i * rowH, c = t.c, tr = trendOf(t.s), name = aName(t.s);
+    g.textAlign = 'left'; g.fillStyle = C.ink; font(700, 40); g.fillText(name, L, top + 56);
+    if (tr) {
+      const nw = g.measureText(name).width;
+      font(700, 28); g.fillStyle = tr.k === 'up' ? C.upT : tr.k === 'dn' ? C.dnT : C.sub;
+      g.fillText(`${tr.k === 'up' ? '↗' : tr.k === 'dn' ? '↘' : '→'} ${tr.t}`, L + nw + 18, top + 54);
+    }
+    const pv = prev.get(t.s.id);
+    g.fillStyle = C.muted; font(400, 25);
+    g.fillText([`올해 ${pct(c.ytd)}`, `고점 대비 ${peakTxt(c.cur)}`, pv != null ? `한 달 전 ${verdict(pv)}` : null].filter(Boolean).join(' · '), L, top + 96);
+    // 온도 막대(가운데 = 보통) + 판정
+    const bx = R - vw - bw, by = top + 33, cx = bx + bw / 2, w = (Math.min(50, Math.abs(t.score) / 2) / 100) * bw;
+    g.fillStyle = C.track; g.beginPath(); g.roundRect(bx, by, bw, 14, 7); g.fill();
+    if (w > 1) { g.fillStyle = t.score >= 0 ? C.up : C.dn; g.beginPath(); g.roundRect(t.score >= 0 ? cx : cx - w, by, w, 14, 7); g.fill(); }
+    g.fillStyle = 'rgba(11,11,11,.45)'; g.fillRect(cx - 1, by - 5, 2, 24);
+    g.textAlign = 'right'; font(700, 38); g.fillStyle = t.score >= 15 ? C.upT : t.score <= -15 ? C.dnT : C.sub;
+    g.fillText(verdict(t.score), R, top + 54);
+    if (i < T.length - 1) { g.strokeStyle = C.line2; g.lineWidth = 2; g.beginPath(); g.moveTo(L, top + rowH - 4); g.lineTo(R, top + rowH - 4); g.stroke(); }
+  });
+  // 안내 (단어 단위 줄바꿈)
+  g.textAlign = 'left'; g.fillStyle = C.sub; font(400, 25);
+  let y = y0 + 8 + T.length * rowH + 30, line = '';
+  const lines = [];
+  for (const wd of '싸다·비싸다는 그 자산의 지난 20년 흐름, 그리고 다른 자산들과 견준 상대적인 온도예요. 비싸도 더 오를 수 있고, 싸도 더 내릴 수 있어요. 예측이나 투자 권유가 아니에요.'.split(' ')) {
+    const test = line ? line + ' ' + wd : wd;
+    if (g.measureText(test).width > R - L && line) { lines.push(line); line = wd; } else line = test;
+  }
+  lines.push(line);
+  for (const ln of lines) { g.fillText(ln, L, y); y += 38; }
+  if (url) {
+    y += 6; g.fillStyle = C.brand; font(700, 26); g.fillText(`자산 모니터 · ${url}`, L, y);
+    y += 40; g.fillStyle = '#e0302a'; g.beginPath(); g.roundRect(L, y - 21, 32, 24, 6); g.fill();
+    g.fillStyle = '#fff'; g.beginPath(); g.moveTo(L + 13, y - 15); g.lineTo(L + 13, y - 3); g.lineTo(L + 22, y - 9); g.fill();
+    g.fillStyle = C.ink; font(700, 26); g.fillText(`유튜브 ${CHANNEL.name}`, L + 44, y);
+  }
+  return cv;
+}
+let PUB_URL = null;
+async function openShot() {
+  if (!S.assets.length) return;
+  if (PUB_URL == null) { try { PUB_URL = (await getJSON('/api/pubinfo')).url || ''; } catch (e) { PUB_URL = ''; } }
+  let ov = $('#shotOv');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'shotOv'; ov.className = 'shot-ov'; document.body.appendChild(ov); }
+  ov.innerHTML = `<div class="shot-box" role="dialog" aria-label="오늘의 자산 온도 그림">
+    <div class="shot-top"><b>오늘의 자산 온도 그림</b><button class="ghost" data-shot-act="close">닫기</button></div>
+    <div class="shot-img" id="shotImg"></div>
+    <div class="shot-bar">${PUB_URL ? `<label><input type="checkbox" id="shotUrl" ${S.shotUrl === false ? '' : 'checked'}> 아래에 공개 주소·채널 넣기</label>` : ''}<span class="gap"></span>
+      <button class="ghost" data-shot-act="copy">복사</button><button class="ghost main" data-shot-act="save">저장</button></div>
+    <p class="note" id="shotMsg">1080×1350 · 블로그·인스타 피드·카톡에 그대로 올릴 수 있어요. 달러/원화는 화면 위 기준을 따라요.</p></div>`;
+  ov.hidden = false;
+  paintShot();
+}
+function paintShot() {
+  S.shotCanvas = drawShot(PUB_URL && S.shotUrl !== false ? PUB_URL : '');
+  const box = $('#shotImg'); box.innerHTML = ''; box.appendChild(S.shotCanvas);
+}
+async function shotAct(act) {
+  const msg = $('#shotMsg'), cv = S.shotCanvas;
+  if (act === 'close') { $('#shotOv').hidden = true; return; }
+  if (act === 'folder') { getJSON('/api/open-shots').catch(() => {}); return; }
+  if (act === 'copy') {
+    try {
+      const blob = await new Promise((ok) => cv.toBlob(ok, 'image/png'));
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      msg.textContent = '복사했어요. 블로그 글쓰기 창이나 카톡 PC에 붙여 넣으면 돼요.';
+    } catch (e) { msg.innerHTML = `<span class="err">복사하지 못했어요 (${e.message}). [저장]을 써 주세요.</span>`; }
+    return;
+  }
+  if (act === 'save') {
+    const d = new Date(), z = (x) => String(x).padStart(2, '0');
+    const name = `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}_자산온도${S.krw ? '_원화' : ''}.png`;
+    try {
+      const r = await fetch('/api/shot', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, data: cv.toDataURL('image/png').split(',')[1] }) });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || r.status);
+      msg.innerHTML = `저장했어요: <b>${j.rel}</b> <button class="ghost" data-shot-act="folder">폴더 열기</button>`;
+    } catch (e) { msg.innerHTML = `<span class="err">저장하지 못했어요 (${e.message}). 바탕화면 '자산 모니터'를 다시 열어 주세요.</span>`; }
+  }
+}
+
 // ── 불러오기 ─────────────────────────────────
-const PUBLIC_DATA = { '/api/history': 'data/history.json', '/api/apt': 'data/apt.json', '/api/live': 'data/live.json' };
+const PUBLIC_DATA ={ '/api/history': 'data/history.json', '/api/apt': 'data/apt.json', '/api/live': 'data/live.json' };
 async function getJSON(u) {
   if (PUBLIC) u = PUBLIC_DATA[u.split('?')[0]] + '?t=' + Math.floor(Date.now() / 300000); // 공개판: 같은 폴더의 자료 파일 (5분 단위로 새로)
   const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status); return r.json(); }
@@ -1566,6 +1806,7 @@ async function loadApt(force) {
   } catch (e) {
     $('#aptNote').innerHTML = `<span class="err">KB부동산 자료를 받지 못했어요 (${e.message}). 잠시 뒤 [기록 다시 받기]를 눌러 주세요.</span>`;
   }
+  S.aptTried = true;
 }
 async function pollLive() {
   try { S.live = await getJSON('/api/live'); S.liveErr = false; }
@@ -1594,6 +1835,12 @@ function setTab(t, keepScroll) {
 }
 
 document.addEventListener('click', (e) => {
+  const sa = e.target.closest('[data-shot-act]');
+  if (sa) { shotAct(sa.dataset.shotAct); return; }
+  if (e.target.id === 'shotOv') { e.target.hidden = true; return; } // 그림 바깥을 누르면 닫기
+  if (e.target.closest('[data-shot]')) { openShot(); return; }
+  const mt = e.target.closest('[data-mvto]');
+  if (mt) { S.mvTo = mt.dataset.mvto; remember(); renderCon(); return; }
   const md = e.target.closest('[data-mvdir]');
   if (md) { S.mvDir = md.dataset.mvdir; remember(); renderCon(); return; }
   const tb = e.target.closest('#tabs button, [data-goto]');
@@ -1626,12 +1873,17 @@ document.addEventListener('click', (e) => {
   }
 });
 document.addEventListener('change', (e) => {
+  if (e.target.id === 'shotUrl') { S.shotUrl = e.target.checked; paintShot(); return; }
   if (e.target.id === 'logBox') { S.log = e.target.checked; remember(); renderDetail(); }
   if (e.target.id === 'lvBase') { S.lvBase = e.target.value; remember(); renderLevels(); }
   if (e.target.id === 'mvFrom' || e.target.id === 'mvTo') { S[e.target.id] = e.target.value; remember(); renderCon(); }
+  if (e.target.id === 'mvBudget') { const x = parseFloat(e.target.value); S.mvBudget = x > 0 ? x : null; remember(); renderCon(); }
   if (e.target.dataset && e.target.dataset.hold) { const id = e.target.dataset.hold; S.hold = e.target.checked ? [...new Set([...S.hold, id])] : S.hold.filter((x) => x !== id); remember(); renderCon(); }
 });
-if (PUBLIC) $('#reload').hidden = true;
+if (PUBLIC) {
+  $('#reload').hidden = true;
+  $('#ytLink').outerHTML = ytLinkHTML(`유튜브 ${CHANNEL.name}`);
+}
 $('#reload').addEventListener('click', async () => {
   const b = $('#reload'); b.disabled = true; b.textContent = '받는 중…';
   try { await Promise.all([loadHistory(true), loadApt(true)]); renderAll(); } catch (e) { alert('다시 받지 못했어요: ' + e.message); }
